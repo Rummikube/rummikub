@@ -1,3 +1,6 @@
+import java.util.HashSet;
+import java.util.Set;
+
 public class Board {
     final int BOARD_WIDTH = 20; // 보드판 가로 길이
     final int BOARD_HEIGHT = 10; // 보드판 세로 길이
@@ -28,11 +31,68 @@ public class Board {
     // 보드판의 타일 조합이 유효한지 검증하는 메서드
     public boolean validateCombination() {
         // 조합 검증 로직 구현
+        int start = -1;
+        for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
+            for(int j = 0 ; j < BOARD_WIDTH ; j ++) {
+                if (start == -1 && tiles[i][j] != null) { // 타일 시작 부분
+                    start = j;
+                }
+                else if(start != -1 && tiles[i][j] == null){ // 타일의 끝 부분
+                    if(!isRun(start, j - 1, i) && !isGroup(start, j - 1, i)) return false;
+                    start = -1;
+                }
+            }
+            if(start != -1){
+                if(!isRun(start, BOARD_WIDTH - 1, i) && !isGroup(start, BOARD_WIDTH - 1, i)) return false;
+            }
+        }
         return true; // 반환값
     }
 
     // 보드판 상태를 출력하는 메서드
     public void displayBoard() {
         // 보드판 상태 출력 로직
+
+    }
+
+    // 타일 세트가 Run 상태인지
+    private boolean isRun(int start, int end, int row){
+        if(end - start + 1 < 3) return false;
+        String color = null;
+        int num = -1;
+        for(int i = start ; i <= end ; i ++){
+            Tile cur = tiles[row][i];
+            if(color == null && num == -1){
+                color = cur.getColor();
+                num = cur.getNumber();
+            }
+            else{
+                if(!color.equals(cur.getColor()) || num + 1 != cur.getNumber()){ // 색이 다르거나 번호가 Run이 아닌 경우
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // 타일 세트가 Group 상태인지
+    private boolean isGroup(int start, int end, int row){
+        if(end - start + 1 < 3) return false;
+        Set<String> set = new HashSet<>();
+        int num = -1;
+        for(int i = start ; i <= end ; i ++){
+            Tile cur = tiles[row][i];
+            if(num == -1) num = cur.getNumber();
+            else {
+                if(cur.getNumber() != num) return false; // 번호가 다른 경우
+            }
+            if(!set.contains(cur.getColor())){
+                set.add(cur.getColor());
+            }
+            else{ // 색상이 같은것이 있는 경우
+                return false;
+            }
+        }
+        return true;
     }
 }
