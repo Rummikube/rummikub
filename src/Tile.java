@@ -1,5 +1,5 @@
 public class Tile {
-    private int number; // 타일의 숫자 만약, 부기(조커)타일이라면 -1
+    private int number; // 타일의 숫자 만약, 부기(조커)타일이라면 -1, -2
     private String color; // 타일의 색상
 
     // 생성자
