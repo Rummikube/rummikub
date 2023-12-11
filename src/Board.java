@@ -11,8 +11,21 @@ public class Board {
         tiles = new Tile[BOARD_HEIGHT][BOARD_WIDTH];
     }
 
+
+    // 변경이전의 보드 상태를 반환하는 함수
+    private Tile[][] getLastBoardState(){
+        Tile[][] newTiles = new Tile[BOARD_HEIGHT][BOARD_WIDTH];
+        for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
+            for(int j = 0 ; j < BOARD_WIDTH ; j ++){
+                newTiles[i][j] = tiles[i][j];
+            }
+        }
+        return newTiles;
+    }
+
+
     // 타일을 보드판에 추가하는 메서드 => 보드판에 추가 가능하면 true, 불가능하면 false 반환
-    public boolean addTile(Tile tile, int tileRow, int tileCol) {
+    public boolean canAddTile(Tile tile, int tileRow, int tileCol) {
         if(tiles[tileRow][tileCol] == null){
             tiles[tileRow][tileCol] = tile;
             return true;
@@ -52,7 +65,7 @@ public class Board {
     // 보드판 상태를 출력하는 메서드
     public void displayBoard() {
         // 보드판 상태 출력 로직
-
+        // TODO
     }
 
     // 타일 세트가 Run 상태인지
