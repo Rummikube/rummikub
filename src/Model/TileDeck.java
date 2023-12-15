@@ -1,3 +1,5 @@
+package Model;
+
 import java.util.*;
 
 // 타일 전체를 관리하는 클래스

@@ -1,3 +1,5 @@
+package Model;
+
 public class Tile {
     private int number; // 타일의 숫자 만약, 부기(조커)타일이라면 -1, -2
     private String color; // 타일의 색상
@@ -32,9 +34,9 @@ public class Tile {
     // 타일 정보를 문자열로 반환하는 메서드
     @Override
     public String toString() {
-        if(isBugi()) return "Tile{ BUGI }";
+        if(isBugi()) return "Model.Tile{ BUGI }";
         else {
-            return "Tile{" +
+            return "Model.Tile{" +
                     "number=" + number +
                     ", color='" + color + '\'' +
                     "}";
