@@ -1,11 +1,13 @@
 package Model;
 
+import Controller.GameController;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class Board {
-    final int BOARD_WIDTH = 20; // 보드판 가로 길이
-    final int BOARD_HEIGHT = 10; // 보드판 세로 길이
+    final int BOARD_WIDTH = GameController.BOARD_WIDTH; // 보드판 가로 길이
+    final int BOARD_HEIGHT = GameController.BOARD_HEIGHT; // 보드판 세로 길이
 
     private Tile[][] tiles;
 
