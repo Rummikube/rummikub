@@ -20,8 +20,9 @@ import static Controller.GameController.HAND_WIDTH;
 public class GameView {
 
     private JFrame frame;
-    private JTextField nameTF;
-    private JTextField addressTF;
+    private JTextField nameTF, addressTF;
+    private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton;
+    private JLabel errorLabel;
     private JPanel[][] board = new JPanel[BOARD_HEIGHT][BOARD_WIDTH]; // 보드의 타일들
 
     private JPanel[][] hand = new JPanel[HAND_HEIGHT][HAND_WIDTH];
@@ -117,7 +118,8 @@ public class GameView {
         sl_panel.putConstraint(SpringLayout.EAST, nameLabel, -50, SpringLayout.WEST, nameTF);
         panel.add(nameLabel);
 
-        JButton makeRoomButton = new JButton("방 만들기");
+
+        makeRoomButton = new JButton("방 만들기");
         sl_panel.putConstraint(SpringLayout.NORTH, makeRoomButton, 73, SpringLayout.SOUTH, addressTF);
         sl_panel.putConstraint(SpringLayout.WEST, makeRoomButton, 400, SpringLayout.WEST, panel);
         sl_panel.putConstraint(SpringLayout.SOUTH, makeRoomButton, 704, SpringLayout.NORTH, panel);
@@ -131,12 +133,23 @@ public class GameView {
         sl_panel.putConstraint(SpringLayout.EAST, LoginImagePanel, -300, SpringLayout.EAST, panel);
         panel.add(LoginImagePanel);
 
-        JButton connectButton = new JButton("참여하기");
+
+        connectButton = new JButton("참여하기");
         sl_panel.putConstraint(SpringLayout.NORTH, connectButton, 73, SpringLayout.SOUTH, addressTF);
         sl_panel.putConstraint(SpringLayout.WEST, connectButton, 865, SpringLayout.WEST, panel);
         sl_panel.putConstraint(SpringLayout.SOUTH, connectButton, -157, SpringLayout.SOUTH, panel);
         sl_panel.putConstraint(SpringLayout.EAST, connectButton, -385, SpringLayout.EAST, panel);
         panel.add(connectButton);
+
+        // 오류 표시 라벨
+
+        errorLabel = new JLabel("");
+        errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        sl_panel.putConstraint(SpringLayout.NORTH, errorLabel, 37, SpringLayout.SOUTH, makeRoomButton);
+        sl_panel.putConstraint(SpringLayout.WEST, errorLabel, 300, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.SOUTH, errorLabel, -80, SpringLayout.SOUTH, panel);
+        sl_panel.putConstraint(SpringLayout.EAST, errorLabel, -300, SpringLayout.EAST, panel);
+        panel.add(errorLabel);
 
         // 게 패널 레이아웃 설정
         JPanel GamePanel = new JPanel();
@@ -277,7 +290,7 @@ public class GameView {
 
 
         // 종료 버튼
-        JButton QuitButton = new JButton("New button");
+        QuitButton = new JButton("New button");
         QuitButton.setBounds(25, 43, 100, 100);
         panel_2.add(QuitButton);
 
@@ -288,13 +301,13 @@ public class GameView {
 
 
         // Run 정렬 버튼
-        JButton RunSortButton = new JButton("New button");
+        RunSortButton = new JButton("New button");
         RunSortButton.setBounds(12, 45, 126, 123);
         panel_4.add(RunSortButton);
 
 
         // Group 정렬 버튼
-        JButton GroupSortButton = new JButton("New button");
+        GroupSortButton = new JButton("New button");
         GroupSortButton.setBounds(12, 178, 126, 107);
         panel_4.add(GroupSortButton);
 
@@ -304,7 +317,7 @@ public class GameView {
         panel_10.setLayout(null);
 
         // 타일 드로우 버튼
-        JButton DrawTileButton = new JButton("New button");
+        DrawTileButton = new JButton("New button");
         DrawTileButton.setBounds(12, 10, 126, 316);
         panel_10.add(DrawTileButton);
 
