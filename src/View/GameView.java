@@ -32,15 +32,15 @@ public class GameView {
      */
 
     // 타일 패널 이동 함수
-    public void moveTileUI(boolean startHand, boolean toHand, int startRow, int startCol, int endRow, int endCol){
+    public void moveTileUI(boolean startHand, boolean toHand, int startRow, int startCol, int endRow, int endCol) {
         // 손패에 있는 타일일 경우
         JPanel movePanel = startHand ? hand[startRow][startCol] : board[startRow][startCol];
         JPanel desPanel = toHand ? hand[endRow][endCol] : board[endRow][endCol];
 
-        if(startHand) hand[startRow][startCol] = desPanel;
+        if (startHand) hand[startRow][startCol] = desPanel;
         else board[startRow][startCol] = desPanel;
 
-        if(toHand) hand[endRow][endCol] = movePanel;
+        if (toHand) hand[endRow][endCol] = movePanel;
         else board[endRow][endCol] = movePanel;
     }
 
@@ -74,62 +74,69 @@ public class GameView {
         frame.getContentPane().setLayout(new CardLayout(0, 0));
 
         // 로그인 패널 구현 부분
-      JPanel LoginPanel = new JPanel();
-      frame.getContentPane().add(LoginPanel, "name_1157230094774500");
-      LoginPanel.setLayout(null);
+        JPanel LoginPanel = new JPanel();
+        frame.getContentPane().add(LoginPanel, "name_1157230094774500");
+        LoginPanel.setLayout(null);
 
-      JPanel panel = new JPanel();
-      panel.setBounds(0, 0, 1584, 861);
-      LoginPanel.add(panel);
-      SpringLayout sl_panel = new SpringLayout();
-      panel.setLayout(sl_panel);
+        JPanel panel = new JPanel();
+        panel.setBounds(0, 0, 1584, 861);
+        LoginPanel.add(panel);
+        SpringLayout sl_panel = new SpringLayout();
+        panel.setLayout(sl_panel);
 
-      JLabel addressLabel = new JLabel("IP 주소");
-      addressLabel.setHorizontalAlignment(SwingConstants.CENTER);
-      panel.add(addressLabel);
+        JLabel addressLabel = new JLabel("IP 주소");
+        addressLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(addressLabel);
 
-      addressTF = new JTextField();
-      sl_panel.putConstraint(SpringLayout.SOUTH, addressTF, -300, SpringLayout.SOUTH, panel);
-      sl_panel.putConstraint(SpringLayout.NORTH, addressLabel, 8, SpringLayout.NORTH, addressTF);
-      sl_panel.putConstraint(SpringLayout.SOUTH, addressLabel, 0, SpringLayout.SOUTH, addressTF);
-      panel.add(addressTF);
-      addressTF.setColumns(10);
+        addressTF = new JTextField();
+        sl_panel.putConstraint(SpringLayout.SOUTH, addressTF, -300, SpringLayout.SOUTH, panel);
+        sl_panel.putConstraint(SpringLayout.NORTH, addressLabel, 8, SpringLayout.NORTH, addressTF);
+        sl_panel.putConstraint(SpringLayout.SOUTH, addressLabel, 0, SpringLayout.SOUTH, addressTF);
+        panel.add(addressTF);
+        addressTF.setColumns(10);
 
-      nameTF = new JTextField();
-      sl_panel.putConstraint(SpringLayout.NORTH, addressTF, 60, SpringLayout.SOUTH, nameTF);
-      sl_panel.putConstraint(SpringLayout.NORTH, nameTF, 425, SpringLayout.NORTH, panel);
-      sl_panel.putConstraint(SpringLayout.SOUTH, nameTF, -400, SpringLayout.SOUTH, panel);
-      sl_panel.putConstraint(SpringLayout.WEST, addressTF, 0, SpringLayout.WEST, nameTF);
-      sl_panel.putConstraint(SpringLayout.EAST, addressTF, 0, SpringLayout.EAST, nameTF);
-      sl_panel.putConstraint(SpringLayout.WEST, nameTF, 500, SpringLayout.WEST, panel);
-      sl_panel.putConstraint(SpringLayout.EAST, nameTF, -500, SpringLayout.EAST, panel);
-      nameTF.setToolTipText("이름을 입력하세요.");
-      panel.add(nameTF);
-      nameTF.setColumns(10);
+        nameTF = new JTextField();
+        sl_panel.putConstraint(SpringLayout.NORTH, addressTF, 60, SpringLayout.SOUTH, nameTF);
+        sl_panel.putConstraint(SpringLayout.NORTH, nameTF, 425, SpringLayout.NORTH, panel);
+        sl_panel.putConstraint(SpringLayout.SOUTH, nameTF, -400, SpringLayout.SOUTH, panel);
+        sl_panel.putConstraint(SpringLayout.WEST, addressTF, 0, SpringLayout.WEST, nameTF);
+        sl_panel.putConstraint(SpringLayout.EAST, addressTF, 0, SpringLayout.EAST, nameTF);
+        sl_panel.putConstraint(SpringLayout.WEST, nameTF, 500, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.EAST, nameTF, -500, SpringLayout.EAST, panel);
+        nameTF.setToolTipText("이름을 입력하세요.");
+        panel.add(nameTF);
+        nameTF.setColumns(10);
 
-      JLabel nameLabel = new JLabel("이름");
-      sl_panel.putConstraint(SpringLayout.WEST, nameLabel, 350, SpringLayout.WEST, panel);
-      sl_panel.putConstraint(SpringLayout.WEST, addressLabel, 0, SpringLayout.WEST, nameLabel);
-      sl_panel.putConstraint(SpringLayout.EAST, addressLabel, 0, SpringLayout.EAST, nameLabel);
-      nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-      sl_panel.putConstraint(SpringLayout.NORTH, nameLabel, 0, SpringLayout.NORTH, nameTF);
-      sl_panel.putConstraint(SpringLayout.SOUTH, nameLabel, 0, SpringLayout.SOUTH, nameTF);
-      sl_panel.putConstraint(SpringLayout.EAST, nameLabel, -50, SpringLayout.WEST, nameTF);
-      panel.add(nameLabel);
+        JLabel nameLabel = new JLabel("이름");
+        sl_panel.putConstraint(SpringLayout.WEST, nameLabel, 350, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.WEST, addressLabel, 0, SpringLayout.WEST, nameLabel);
+        sl_panel.putConstraint(SpringLayout.EAST, addressLabel, 0, SpringLayout.EAST, nameLabel);
+        nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        sl_panel.putConstraint(SpringLayout.NORTH, nameLabel, 0, SpringLayout.NORTH, nameTF);
+        sl_panel.putConstraint(SpringLayout.SOUTH, nameLabel, 0, SpringLayout.SOUTH, nameTF);
+        sl_panel.putConstraint(SpringLayout.EAST, nameLabel, -50, SpringLayout.WEST, nameTF);
+        panel.add(nameLabel);
 
-      JButton connectButton = new JButton("연결하기");
-      sl_panel.putConstraint(SpringLayout.NORTH, connectButton, 50, SpringLayout.SOUTH, addressTF);
-      sl_panel.putConstraint(SpringLayout.WEST, connectButton, 650, SpringLayout.WEST, panel);
-      sl_panel.putConstraint(SpringLayout.SOUTH, connectButton, 660, SpringLayout.NORTH, panel);
-      sl_panel.putConstraint(SpringLayout.EAST, connectButton, -650, SpringLayout.EAST, panel);
-      panel.add(connectButton);
+        JButton makeRoomButton = new JButton("방 만들기");
+        sl_panel.putConstraint(SpringLayout.NORTH, makeRoomButton, 73, SpringLayout.SOUTH, addressTF);
+        sl_panel.putConstraint(SpringLayout.WEST, makeRoomButton, 400, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.SOUTH, makeRoomButton, 704, SpringLayout.NORTH, panel);
+        sl_panel.putConstraint(SpringLayout.EAST, makeRoomButton, -850, SpringLayout.EAST, panel);
+        panel.add(makeRoomButton);
 
-      JPanel LoginImagePanel = new JPanel();
-      sl_panel.putConstraint(SpringLayout.NORTH, LoginImagePanel, 60, SpringLayout.NORTH, panel);
-      sl_panel.putConstraint(SpringLayout.WEST, LoginImagePanel, 300, SpringLayout.WEST, panel);
-      sl_panel.putConstraint(SpringLayout.SOUTH, LoginImagePanel, 320, SpringLayout.NORTH, panel);
-      sl_panel.putConstraint(SpringLayout.EAST, LoginImagePanel, -300, SpringLayout.EAST, panel);
-      panel.add(LoginImagePanel);
+        JPanel LoginImagePanel = new JPanel();
+        sl_panel.putConstraint(SpringLayout.NORTH, LoginImagePanel, 60, SpringLayout.NORTH, panel);
+        sl_panel.putConstraint(SpringLayout.WEST, LoginImagePanel, 300, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.SOUTH, LoginImagePanel, 320, SpringLayout.NORTH, panel);
+        sl_panel.putConstraint(SpringLayout.EAST, LoginImagePanel, -300, SpringLayout.EAST, panel);
+        panel.add(LoginImagePanel);
+
+        JButton connectButton = new JButton("참여하기");
+        sl_panel.putConstraint(SpringLayout.NORTH, connectButton, 73, SpringLayout.SOUTH, addressTF);
+        sl_panel.putConstraint(SpringLayout.WEST, connectButton, 865, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.SOUTH, connectButton, -157, SpringLayout.SOUTH, panel);
+        sl_panel.putConstraint(SpringLayout.EAST, connectButton, -385, SpringLayout.EAST, panel);
+        panel.add(connectButton);
 
         // 게 패널 레이아웃 설정
         JPanel GamePanel = new JPanel();
@@ -143,9 +150,8 @@ public class GameView {
         PlayerIconPanel.setLayout(new BoxLayout(PlayerIconPanel, BoxLayout.Y_AXIS));
 
 
-
         // 플레이어 아이콘 패널 추가
-        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++) {
+        for (int i = 0; i < MAX_PLAYER_COUNT; i++) {
             JPanel playerIconBorder = new JPanel();
             PlayerIconPanel.add(playerIconBorder);
             playerIconBorder.setLayout(new BorderLayout(0, 0));
@@ -169,7 +175,6 @@ public class GameView {
 
             playerIcon[i].setBackground(Color.black);
         }
-
 
 
         JPanel panel_3 = new JPanel();
@@ -234,10 +239,10 @@ public class GameView {
         BoardPanel.setLayout(new GridLayout(BOARD_HEIGHT, BOARD_WIDTH, 0, 5));
 
         // board 배열에 패널 추가
-        for(int i = 0; i < BOARD_HEIGHT; i ++) {
+        for (int i = 0; i < BOARD_HEIGHT; i++) {
             JPanel curRowPanel = new JPanel();
             BoardPanel.add(curRowPanel);
-            for(int j = 0; j < BOARD_WIDTH; j ++) {
+            for (int j = 0; j < BOARD_WIDTH; j++) {
                 JPanel tmp = new JPanel();
                 board[i][j] = tmp;
                 curRowPanel.add(tmp);
@@ -247,10 +252,10 @@ public class GameView {
         }
 
         // hand 배열에 패널 추가
-        for(int i = 0; i < HAND_HEIGHT; i ++) {
+        for (int i = 0; i < HAND_HEIGHT; i++) {
             JPanel curRowPanel = new JPanel();
             HandPanel.add(curRowPanel);
-            for(int j = 0; j < HAND_WIDTH; j ++) {
+            for (int j = 0; j < HAND_WIDTH; j++) {
                 JPanel tmp = new JPanel();
                 hand[i][j] = tmp;
                 curRowPanel.add(tmp);
@@ -258,8 +263,6 @@ public class GameView {
                 hand[i][j].setBackground(Color.black);
             }
         }
-
-
 
 
         // 오른쪽 패널
