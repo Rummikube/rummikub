@@ -227,9 +227,6 @@ public class GameView {
                 }
                 System.out.println(nameTF.getText().isEmpty());
                 System.out.println("IP주소 : " + addressTF.getText() + "로 연결을 시도합니다.");
-                if(!gameController.connectRoom(address)) {
-                    loginErrorLabel.setText("IP주소로 연결할 수 없습니다. IP주소를 확인해주세요.");
-                }
             }
         });
 

@@ -7,17 +7,12 @@ import java.util.List;
 import java.util.Random;
 
 public class Game {
-
-    private enum GameState{
-        IN_PROGRESS, FINISHED
-    }
     // 게임 진행 플레이어들
     private Player[] players;
     // 현재 보드판
     private Board board;
     // 현재 턴인 플레이어의 인덱스 번호
     private int currentPlayerIndex;
-    private GameState gameState;
 
     private int playerCount = 0;
 
@@ -25,7 +20,6 @@ public class Game {
         players = new Player[GameController.MAX_PLAYER_COUNT];
         this.board = new Board();
         this.currentPlayerIndex = 0;
-        gameState = GameState.IN_PROGRESS;
     }
 
 
@@ -81,7 +75,7 @@ public class Game {
 
     // 게임 진행 상태를 관리하는 메서드
     public void manageGameProgress() {
-        while (gameState == GameState.IN_PROGRESS) {
+        while (true) {
             Player currentPlayer = players[currentPlayerIndex];
             performPlayerTurn(currentPlayer);
 
@@ -89,7 +83,7 @@ public class Game {
             // 게임이 끝난 경우
             if (checkWinCondition(currentPlayer)) {
                 //TODO
-                gameState = GameState.FINISHED;
+                break;
             }
 
 
