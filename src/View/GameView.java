@@ -1,5 +1,7 @@
 package View;
 
+import Controller.GameController;
+
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 
@@ -10,6 +12,8 @@ import java.awt.Color;
 
 import java.awt.GridLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import static Controller.GameController.MAX_PLAYER_COUNT;
 import static Controller.GameController.BOARD_HEIGHT;
@@ -27,6 +31,53 @@ public class GameView {
 
     private JPanel[][] hand = new JPanel[HAND_HEIGHT][HAND_WIDTH];
     private JPanel[] playerIcon = new JPanel[MAX_PLAYER_COUNT];
+
+    private GameController gameController;
+
+
+    public void setGameController(GameController gameController){
+        this.gameController = gameController;
+    }
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public JTextField getNameTF() {
+        return nameTF;
+    }
+
+    public JTextField getAddressTF() {
+        return addressTF;
+    }
+
+    public JButton getMakeRoomButton() {
+        return makeRoomButton;
+    }
+
+    public JButton getConnectButton() {
+        return connectButton;
+    }
+
+    public JButton getQuitButton() {
+        return QuitButton;
+    }
+
+    public JButton getRunSortButton() {
+        return RunSortButton;
+    }
+
+    public JButton getGroupSortButton() {
+        return GroupSortButton;
+    }
+
+    public JButton getDrawTileButton() {
+        return DrawTileButton;
+    }
+
+    public JLabel getErrorLabel() {
+        return errorLabel;
+    }
 
     /**
      * Launch the application.
@@ -46,16 +97,7 @@ public class GameView {
     }
 
     public void startUI() {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    GameView window = new GameView();
-                    window.frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        frame.setVisible(true);
     }
 
     /**
@@ -124,6 +166,14 @@ public class GameView {
         sl_panel.putConstraint(SpringLayout.WEST, makeRoomButton, 400, SpringLayout.WEST, panel);
         sl_panel.putConstraint(SpringLayout.SOUTH, makeRoomButton, 704, SpringLayout.NORTH, panel);
         sl_panel.putConstraint(SpringLayout.EAST, makeRoomButton, -850, SpringLayout.EAST, panel);
+        makeRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println(gameController);
+                gameController.makeRoom();
+            }
+        });
+
         panel.add(makeRoomButton);
 
         JPanel LoginImagePanel = new JPanel();

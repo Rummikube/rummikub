@@ -29,6 +29,28 @@ public class Game {
     }
 
 
+    // 플레이어 목록에 플레이어 추가
+    public boolean addPlayer(Player player){
+        for(int i = 0 ; i < GameController.MAX_PLAYER_COUNT ; i ++){
+            if(players[i] == null){
+                players[i] = player;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 현재 플레이어 수
+    public int getPlayerCount(){
+        int curCnt = 0;
+        for(int i = 0 ; i < GameController.MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null){
+                curCnt ++;
+            }
+        }
+        return curCnt;
+    }
+
     // 처음 시작할 사람 랜덤으로 결정
     private int getStartPlayerIndex(){
         int startIdx = new Random().nextInt(playerCount);
@@ -43,16 +65,12 @@ public class Game {
         return -1;
     }
 
+
+
     // 게임 시작 메서드
     public void start(){
 
-        // 플레이어 수 정하기
-        playerCount = 0;
-        for(int i = 0 ; i < GameController.MAX_PLAYER_COUNT ; i ++){
-            if(players[i] != null){
-                playerCount ++;
-            }
-        }
+        playerCount = getPlayerCount();
 
         currentPlayerIndex = getStartPlayerIndex();
 
