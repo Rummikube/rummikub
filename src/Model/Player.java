@@ -8,6 +8,10 @@ public class Player {
     private String name; // 유저의 이름
     private List<Tile> tiles; // 유저가 가지고 있는 타일들
 
+    private int playerIdx = -1; // players 인덱스 번호
+
+    private int handlerIdx = -1; // clientHandler 인덱스 번호
+
     // 유저 클래스의 생성자
     public Player(String name) {
         this.name = name;
@@ -32,6 +36,22 @@ public class Player {
     // 특정 타일을 유저의 타일 리스트에서 제거하는 메서드
     public void removeTile(Tile tile) {
         tiles.remove(tile);
+    }
+
+    public int getHandlerIdx() {
+        return handlerIdx;
+    }
+
+    public void setHandlerIdx(int handlerIdx) {
+        this.handlerIdx = handlerIdx;
+    }
+
+    public int getPlayerIdx() {
+        return playerIdx;
+    }
+
+    public void setPlayerIdx(int playerIdx) {
+        this.playerIdx = playerIdx;
     }
 
     // 추가 유저 행동 메서드
