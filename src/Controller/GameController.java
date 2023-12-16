@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.Client;
 import Model.Player;
 import Model.Server;
 import View.GameView;
@@ -12,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.sql.SQLOutput;
 
 
@@ -23,6 +25,7 @@ public class GameController {
 
     private boolean isServer = false; // 현재 서버로 운영되는 사용자인지
     private Server server = null;
+    private Client client = null;
 
     public static final int MAX_PLAYER_COUNT = 4; // 최대 플레이어 수 (본인 포함)
     public static final int BOARD_WIDTH = 20;
@@ -52,8 +55,17 @@ public class GameController {
     }
 
 
+    public boolean connectRoom(String address) {
+        client = new Client();
+        isServer = false;
+        try {
+            client.connect(address, PORT);
+        } catch (UnknownHostException e) {
+            return false;
+        }
+        return true;
+    }
+ }
 
-
-}
 
 

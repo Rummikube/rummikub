@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.*;
 
 public class Client {
-    static void connect(String address, int port) throws UnknownHostException{
+    public void connect(String address, int port) throws UnknownHostException{
         try (Socket socket = new Socket(address, port);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

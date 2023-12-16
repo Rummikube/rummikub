@@ -14,6 +14,10 @@ import java.awt.GridLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static Controller.GameController.MAX_PLAYER_COUNT;
 import static Controller.GameController.BOARD_HEIGHT;
@@ -99,17 +103,20 @@ public class GameView {
     public void startUI() {
         frame.setVisible(true);
     }
-
-    /**
-     * Create the application.
-     */
     public GameView() {
         initialize();
     }
 
-    /**
-     * Initialize the contents of the frame.
-     */
+    // 유효한 IP주소인지 검사
+    public static boolean isValidIP(String ipAddress) {
+        Pattern pattern = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+        Matcher matcher = pattern.matcher(ipAddress);
+        return matcher.matches();
+    }
+
     private void initialize() {
         frame = new JFrame();
         frame.setBounds(0, 0, 1600, 900);
@@ -169,7 +176,11 @@ public class GameView {
         makeRoomButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println(gameController);
+                // valid test
+                if(nameTF.getText() == ""){
+                    errorLabel.setText("이름을 입력해주세요.");
+                    return;
+                }
                 gameController.makeRoom();
             }
         });
@@ -190,6 +201,30 @@ public class GameView {
         sl_panel.putConstraint(SpringLayout.SOUTH, connectButton, -157, SpringLayout.SOUTH, panel);
         sl_panel.putConstraint(SpringLayout.EAST, connectButton, -385, SpringLayout.EAST, panel);
         panel.add(connectButton);
+
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = nameTF.getText();
+                String address = addressTF.getText();
+
+                System.out.println(isValidIP(address));
+
+                if(name.isEmpty() || name.isBlank()){
+                    errorLabel.setText("이름을 입력해주세요.");
+                    return;
+                }
+                else if(address.isEmpty() || address.isBlank() || !isValidIP(address)){
+                    errorLabel.setText("올바른 IP주소를 입력해주세요.");
+                    return;
+                }
+                System.out.println(nameTF.getText().isEmpty());
+                System.out.println("IP주소 : " + addressTF.getText() + "로 연결을 시도합니다.");
+                if(gameController.connectRoom(address)) {
+                    errorLabel.setText("IP주소로 연결할 수 없습니다. IP주소를 확인해주세요.");
+                }
+            }
+        });
 
         // 오류 표시 라벨
 
