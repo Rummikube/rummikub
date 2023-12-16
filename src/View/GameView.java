@@ -2,7 +2,6 @@ package View;
 
 import Controller.GameController;
 
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 
 import javax.swing.*;
@@ -14,8 +13,6 @@ import java.awt.GridLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,12 +26,14 @@ public class GameView {
 
     private JFrame frame;
     private JTextField nameTF, addressTF;
-    private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton;
-    private JLabel errorLabel;
+    private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton, readyButton, startButton;
+    private JLabel loginErrorLabel, roomNoticePanel;
     private JPanel[][] board = new JPanel[BOARD_HEIGHT][BOARD_WIDTH]; // 보드의 타일들
 
     private JPanel[][] hand = new JPanel[HAND_HEIGHT][HAND_WIDTH];
     private JPanel[] playerIcon = new JPanel[MAX_PLAYER_COUNT];
+    private JPanel[] roomReadyPanel = new JPanel[MAX_PLAYER_COUNT];
+    private JLabel[] roomNameLabel = new JLabel[MAX_PLAYER_COUNT];
 
     private GameController gameController;
 
@@ -79,8 +78,8 @@ public class GameView {
         return DrawTileButton;
     }
 
-    public JLabel getErrorLabel() {
-        return errorLabel;
+    public JLabel getLoginErrorLabel() {
+        return loginErrorLabel;
     }
 
     /**
@@ -178,7 +177,7 @@ public class GameView {
             public void actionPerformed(ActionEvent e) {
                 // valid test
                 if(nameTF.getText() == ""){
-                    errorLabel.setText("이름을 입력해주세요.");
+                    loginErrorLabel.setText("이름을 입력해주세요.");
                     return;
                 }
                 gameController.makeRoom();
@@ -211,30 +210,30 @@ public class GameView {
                 System.out.println(isValidIP(address));
 
                 if(name.isEmpty() || name.isBlank()){
-                    errorLabel.setText("이름을 입력해주세요.");
+                    loginErrorLabel.setText("이름을 입력해주세요.");
                     return;
                 }
                 else if(address.isEmpty() || address.isBlank() || !isValidIP(address)){
-                    errorLabel.setText("올바른 IP주소를 입력해주세요.");
+                    loginErrorLabel.setText("올바른 IP주소를 입력해주세요.");
                     return;
                 }
                 System.out.println(nameTF.getText().isEmpty());
                 System.out.println("IP주소 : " + addressTF.getText() + "로 연결을 시도합니다.");
                 if(gameController.connectRoom(address)) {
-                    errorLabel.setText("IP주소로 연결할 수 없습니다. IP주소를 확인해주세요.");
+                    loginErrorLabel.setText("IP주소로 연결할 수 없습니다. IP주소를 확인해주세요.");
                 }
             }
         });
 
         // 오류 표시 라벨
 
-        errorLabel = new JLabel("");
-        errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        sl_panel.putConstraint(SpringLayout.NORTH, errorLabel, 37, SpringLayout.SOUTH, makeRoomButton);
-        sl_panel.putConstraint(SpringLayout.WEST, errorLabel, 300, SpringLayout.WEST, panel);
-        sl_panel.putConstraint(SpringLayout.SOUTH, errorLabel, -80, SpringLayout.SOUTH, panel);
-        sl_panel.putConstraint(SpringLayout.EAST, errorLabel, -300, SpringLayout.EAST, panel);
-        panel.add(errorLabel);
+        loginErrorLabel = new JLabel("");
+        loginErrorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        sl_panel.putConstraint(SpringLayout.NORTH, loginErrorLabel, 37, SpringLayout.SOUTH, makeRoomButton);
+        sl_panel.putConstraint(SpringLayout.WEST, loginErrorLabel, 300, SpringLayout.WEST, panel);
+        sl_panel.putConstraint(SpringLayout.SOUTH, loginErrorLabel, -80, SpringLayout.SOUTH, panel);
+        sl_panel.putConstraint(SpringLayout.EAST, loginErrorLabel, -300, SpringLayout.EAST, panel);
+        panel.add(loginErrorLabel);
 
         // 게 패널 레이아웃 설정
         JPanel GamePanel = new JPanel();
@@ -406,6 +405,147 @@ public class GameView {
         DrawTileButton.setBounds(12, 10, 126, 316);
         panel_10.add(DrawTileButton);
 
+        // 플레이어 방
+        JPanel RoomPanel = new JPanel();
+        frame.getContentPane().add(RoomPanel, "name_1320069507124400");
+        RoomPanel.setLayout(new BorderLayout(0, 0));
 
+        JPanel panel_11 = new JPanel();
+        panel_11.setPreferredSize(new Dimension(10, 100));
+        RoomPanel.add(panel_11, BorderLayout.NORTH);
+        panel_11.setLayout(new BorderLayout(0, 0));
+
+        JPanel panel_22 = new JPanel();
+        panel_11.add(panel_22, BorderLayout.CENTER);
+        panel_22.setLayout(null);
+
+        roomNoticePanel = new JLabel("New label");
+        roomNoticePanel.setHorizontalAlignment(SwingConstants.CENTER);
+        roomNoticePanel.setBounds(160, 33, 1264, 35);
+        panel_22.add(roomNoticePanel);
+
+        JPanel panel_12 = new JPanel();
+        panel_12.setPreferredSize(new Dimension(300, 10));
+        RoomPanel.add(panel_12, BorderLayout.EAST);
+        panel_12.setLayout(new BoxLayout(panel_12, BoxLayout.Y_AXIS));
+
+        JPanel panel_19 = new JPanel();
+        panel_12.add(panel_19);
+        panel_19.setLayout(new BorderLayout(0, 0));
+
+        JPanel panel_21 = new JPanel();
+        panel_21.setPreferredSize(new Dimension(10, 30));
+        panel_19.add(panel_21, BorderLayout.NORTH);
+
+        JPanel panel_27 = new JPanel();
+        panel_27.setPreferredSize(new Dimension(30, 10));
+        panel_19.add(panel_27, BorderLayout.WEST);
+
+        JPanel panel_28 = new JPanel();
+        panel_28.setPreferredSize(new Dimension(30, 10));
+        panel_19.add(panel_28, BorderLayout.EAST);
+
+        JPanel panel_31 = new JPanel();
+        panel_31.setPreferredSize(new Dimension(10, 15));
+        panel_19.add(panel_31, BorderLayout.SOUTH);
+
+        startButton = new JButton("New button");
+        panel_19.add(startButton, BorderLayout.CENTER);
+
+        JPanel panel_20 = new JPanel();
+        panel_12.add(panel_20);
+        panel_20.setLayout(new BorderLayout(0, 0));
+
+        JPanel panel_24 = new JPanel();
+        panel_24.setPreferredSize(new Dimension(10, 30));
+        panel_20.add(panel_24, BorderLayout.SOUTH);
+
+        JPanel panel_29 = new JPanel();
+        panel_29.setPreferredSize(new Dimension(30, 10));
+        panel_20.add(panel_29, BorderLayout.WEST);
+
+        JPanel panel_30 = new JPanel();
+        panel_30.setPreferredSize(new Dimension(30, 10));
+        panel_20.add(panel_30, BorderLayout.EAST);
+
+        JPanel panel_32 = new JPanel();
+        panel_32.setPreferredSize(new Dimension(10, 15));
+        panel_20.add(panel_32, BorderLayout.NORTH);
+
+        readyButton = new JButton("New button");
+        panel_20.add(readyButton, BorderLayout.CENTER);
+
+        JPanel panel_13 = new JPanel();
+        RoomPanel.add(panel_13, BorderLayout.CENTER);
+        panel_13.setLayout(new BorderLayout(0, 0));
+
+        JPanel panel_14 = new JPanel();
+        panel_14.setPreferredSize(new Dimension(50, 10));
+        panel_13.add(panel_14, BorderLayout.WEST);
+
+        JPanel panel_15 = new JPanel();
+        panel_15.setPreferredSize(new Dimension(50, 10));
+        panel_13.add(panel_15, BorderLayout.EAST);
+
+        JPanel panel_16 = new JPanel();
+        panel_16.setPreferredSize(new Dimension(10, 50));
+        panel_13.add(panel_16, BorderLayout.NORTH);
+
+        JPanel panel_17 = new JPanel();
+        panel_17.setPreferredSize(new Dimension(10, 50));
+        panel_13.add(panel_17, BorderLayout.SOUTH);
+
+        JPanel panel_18 = new JPanel();
+        panel_13.add(panel_18, BorderLayout.CENTER);
+        panel_18.setLayout(new GridLayout(2, 2, 50, 20));
+
+
+        JPanel playerRoomRow2 = new JPanel();
+        FlowLayout fl_playerRoomRow2 = (FlowLayout) playerRoomRow2.getLayout();
+        fl_playerRoomRow2.setHgap(30);
+        panel_18.add(playerRoomRow2);
+
+
+        for(int i = 0 ; i < 2 ; i ++) {
+            JPanel roomRowPanel = new JPanel();
+            FlowLayout fl_playerRoomRow1 = (FlowLayout) roomRowPanel.getLayout();
+            fl_playerRoomRow1.setHgap(30);
+            panel_18.add(roomRowPanel);
+
+            for(int j = 0 ; j < 2 ; j ++) {
+                JPanel RoomPlayerPanel = new JPanel();
+                RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
+                roomRowPanel.add(RoomPlayerPanel);
+                RoomPlayerPanel.setLayout(new BorderLayout(0, 0));
+
+                JPanel readyPanel = new JPanel();
+                roomReadyPanel[i * 2 + j] = readyPanel;
+                readyPanel.setPreferredSize(new Dimension(10, 50));
+                RoomPlayerPanel.add(readyPanel, BorderLayout.SOUTH);
+
+                JPanel tmp1 = new JPanel();
+                RoomPlayerPanel.add(tmp1, BorderLayout.CENTER);
+                tmp1.setLayout(new BorderLayout(0, 0));
+
+                JPanel tmp2 = new JPanel();
+                tmp2.setPreferredSize(new Dimension(110, 10));
+                tmp1.add(tmp2, BorderLayout.WEST);
+
+                JPanel tmp3 = new JPanel();
+                tmp3.setPreferredSize(new Dimension(110, 10));
+                tmp1.add(tmp3, BorderLayout.EAST);
+
+                JLabel playerImageLabel = new JLabel("player_Image");
+                playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                tmp1.add(playerImageLabel, BorderLayout.CENTER);
+
+                JLabel playerNameLabel = new JLabel("player_name");
+                roomNameLabel[i * 2 + j] = playerNameLabel;
+                playerNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                playerNameLabel.setPreferredSize(new Dimension(57, 30));
+                RoomPlayerPanel.add(playerNameLabel, BorderLayout.NORTH);
+
+            }
+        }
     }
 }
