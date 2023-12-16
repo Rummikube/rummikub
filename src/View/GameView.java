@@ -86,6 +86,14 @@ public class GameView {
      * Launch the application.
      */
 
+
+    // 패널 전환 함수 LoginPanel, RoomPanel, GamePanel
+    public void changePanel(String panelName){
+        CardLayout cardLayout = (CardLayout)frame.getContentPane().getLayout();
+        cardLayout.show(frame.getContentPane(), panelName);
+    }
+
+
     // 타일 패널 이동 함수
     public void moveTileUI(boolean startHand, boolean toHand, int startRow, int startCol, int endRow, int endCol) {
         // 손패에 있는 타일일 경우
@@ -124,7 +132,7 @@ public class GameView {
 
         // 로그인 패널 구현 부분
         JPanel LoginPanel = new JPanel();
-        frame.getContentPane().add(LoginPanel, "name_1157230094774500");
+        frame.getContentPane().add(LoginPanel, "LoginPanel");
         LoginPanel.setLayout(null);
 
         JPanel panel = new JPanel();
@@ -176,7 +184,7 @@ public class GameView {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // valid test
-                if(nameTF.getText() == ""){
+                if(nameTF.getText().isEmpty() || nameTF.getText().isBlank()){
                     loginErrorLabel.setText("이름을 입력해주세요.");
                     return;
                 }
@@ -219,7 +227,7 @@ public class GameView {
                 }
                 System.out.println(nameTF.getText().isEmpty());
                 System.out.println("IP주소 : " + addressTF.getText() + "로 연결을 시도합니다.");
-                if(gameController.connectRoom(address)) {
+                if(!gameController.connectRoom(address)) {
                     loginErrorLabel.setText("IP주소로 연결할 수 없습니다. IP주소를 확인해주세요.");
                 }
             }
@@ -237,7 +245,7 @@ public class GameView {
 
         // 게 패널 레이아웃 설정
         JPanel GamePanel = new JPanel();
-        frame.getContentPane().add(GamePanel, "name_1157230101844400");
+        frame.getContentPane().add(GamePanel, "GamePanel");
         GamePanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
         GamePanel.setLayout(new BoxLayout(GamePanel, BoxLayout.X_AXIS));
 
@@ -407,7 +415,7 @@ public class GameView {
 
         // 플레이어 방
         JPanel RoomPanel = new JPanel();
-        frame.getContentPane().add(RoomPanel, "name_1320069507124400");
+        frame.getContentPane().add(RoomPanel, "RoomPanel");
         RoomPanel.setLayout(new BorderLayout(0, 0));
 
         JPanel panel_11 = new JPanel();
@@ -500,20 +508,16 @@ public class GameView {
         panel_18.setLayout(new GridLayout(2, 2, 50, 20));
 
 
-        JPanel playerRoomRow2 = new JPanel();
-        FlowLayout fl_playerRoomRow2 = (FlowLayout) playerRoomRow2.getLayout();
-        fl_playerRoomRow2.setHgap(30);
-        panel_18.add(playerRoomRow2);
-
-
         for(int i = 0 ; i < 2 ; i ++) {
             JPanel roomRowPanel = new JPanel();
             FlowLayout fl_playerRoomRow1 = (FlowLayout) roomRowPanel.getLayout();
             fl_playerRoomRow1.setHgap(30);
             panel_18.add(roomRowPanel);
+//            roomRowPanel.setBackground(Color.black);
 
             for(int j = 0 ; j < 2 ; j ++) {
                 JPanel RoomPlayerPanel = new JPanel();
+//                RoomPlayerPanel.setBackground(Color.cyan);
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
                 roomRowPanel.add(RoomPlayerPanel);
                 RoomPlayerPanel.setLayout(new BorderLayout(0, 0));
@@ -522,6 +526,7 @@ public class GameView {
                 roomReadyPanel[i * 2 + j] = readyPanel;
                 readyPanel.setPreferredSize(new Dimension(10, 50));
                 RoomPlayerPanel.add(readyPanel, BorderLayout.SOUTH);
+//                readyPanel.setBackground(Color.red);
 
                 JPanel tmp1 = new JPanel();
                 RoomPlayerPanel.add(tmp1, BorderLayout.CENTER);
@@ -547,5 +552,6 @@ public class GameView {
 
             }
         }
+
     }
 }

@@ -1,20 +1,10 @@
 package Controller;
 
-import Model.Client;
 import Model.Player;
-import Model.Server;
 import View.GameView;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.awt.*;
 import java.net.UnknownHostException;
-import java.sql.SQLOutput;
 
 
 // 서버 플레이어가 게임 진행을 관리
@@ -52,6 +42,7 @@ public class GameController {
         server = new Server(PORT);
         isServer = true;
         // 뷰에서 화면 전환함수
+        view.changePanel("RoomPanel");
     }
 
 
@@ -60,6 +51,8 @@ public class GameController {
         isServer = false;
         try {
             client.connect(address, PORT);
+            CardLayout cardLayout = (CardLayout) view.getFrame().getContentPane().getLayout();
+            cardLayout.next(view.getFrame().getContentPane());
         } catch (UnknownHostException e) {
             return false;
         }
