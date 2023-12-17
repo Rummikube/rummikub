@@ -215,8 +215,6 @@ public class GameView {
                 String name = nameTF.getText();
                 String address = addressTF.getText();
 
-                System.out.println(isValidIP(address));
-
                 if(name.isEmpty() || name.isBlank()){
                     loginErrorLabel.setText("이름을 입력해주세요.");
                     return;
@@ -225,8 +223,8 @@ public class GameView {
                     loginErrorLabel.setText("올바른 IP주소를 입력해주세요.");
                     return;
                 }
-                System.out.println(nameTF.getText().isEmpty());
                 System.out.println("IP주소 : " + addressTF.getText() + "로 연결을 시도합니다.");
+                gameController.connectRoom(addressTF.getText());
             }
         });
 

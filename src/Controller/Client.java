@@ -37,7 +37,9 @@ public class Client implements Runnable{
 
     public void connect(String address, int port, String name) throws UnknownHostException, NotEmptySpaceException, OnProgressException{
         try {
+            System.out.println("연결을 시도합니다.");
             curSocket = new Socket(address, port);
+            System.out.println(curSocket);
             this.out = new ObjectOutputStream(curSocket.getOutputStream());
             this.in = new ObjectInputStream(curSocket.getInputStream());
 

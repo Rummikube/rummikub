@@ -28,8 +28,13 @@ public class Server {
                     ServerSocket serverSocket;
                     try {
                         serverSocket = new ServerSocket(port);
-                        System.out.println("server 소켓 생성");
+                        System.out.println("server 소켓 생성, IP : " + serverSocket.getLocalSocketAddress());
+                        System.out.println(InetAddress.getLocalHost().getHostAddress());
+
+                        InetAddress serverLocalIpAddress = serverSocket.getInetAddress();
+                        System.out.println("Serversocket Local IP Address : " + serverLocalIpAddress.getHostAddress());
                         while(true) {
+                            System.out.println("기다리는 중");
                             Socket clientSocket = serverSocket.accept();
                             System.out.println("클라이언트 연결됨: " + clientSocket.getInetAddress().getHostAddress());
 
