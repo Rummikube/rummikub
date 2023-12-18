@@ -1,10 +1,7 @@
 package Controller;
 
-import jdk.swing.interop.SwingInterOpUtils;
-
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -18,18 +15,17 @@ public class ClientHandler implements Runnable {
 
 
     // 클라이언트에 객체 전달
-    public void returnObj (SerializeObject obj){
+    public void setObject(SerializeObject obj){
         this.obj = obj;
     }
 
     public void update(SerializeObject object){
         // 현재 오브젝트 파싱 및 처리
         server.excute(object, index);
-        server.notifiObservers(this, object);
     }
 
 
-    public ClientHandler(Socket socket, Server server, int index) throws SocketException {
+    public ClientHandler(Socket socket, Server server, int index) {
         this.clientSocket = socket;
         this.server = server;
         this.index = index;
@@ -43,7 +39,6 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("핸들러 스레드 실행중 ..,");
         try {
             while (true) {
                 if(obj != null || (input = objectInputStream.readObject()) != null) {

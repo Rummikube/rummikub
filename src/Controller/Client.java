@@ -16,7 +16,6 @@ public class Client implements Runnable{
     private Object input = null;
     private GameController gameController;
 
-
     public void setObject(SerializeObject object){
         obj = object;
     }
@@ -38,7 +37,7 @@ public class Client implements Runnable{
             else if(answerStr.equals("현재 게임이 진행중입니다.")){
                 throw new OnProgressException();
             }
-            returnObj(new SerializeObject("received", "String"));
+            setObject(new SerializeObject("received", "String"));
             Thread clientThread = new Thread(this);
             clientThread.start();
             System.out.println("서버에 연결되었습니다.");
@@ -49,11 +48,6 @@ public class Client implements Runnable{
         } catch (ClassNotFoundException e) {
             System.out.println("클래스가 맞지 않습니다.");
         }
-    }
-
-    // 서버에 객체 전달
-    public synchronized void returnObj (SerializeObject obj){
-        this.obj = obj;
     }
 
     @Override

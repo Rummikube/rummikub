@@ -1,6 +1,5 @@
 package Controller;
 
-import Model.Game;
 import Model.Player;
 
 import java.io.*;
@@ -22,12 +21,12 @@ public class Server {
         openServer();
     }
 
-
-    public void notifiObservers(ClientHandler clientHandler, SerializeObject object) {
+    public void notifiObservers(SerializeObject object) {
         for (int i = 1; i < GameController.MAX_PLAYER_COUNT; i++) {
-            if (players[i] == null || players[i].getClientHandler() == clientHandler) continue;
+            if (players[i] == null) continue;
+            System.out.println("notify => " + object.getEventObject());
             ClientHandler curHandler = players[i].getClientHandler();
-            curHandler.returnObj(object);
+            curHandler.setObject(object);
         }
     }
 
@@ -40,7 +39,7 @@ public class Server {
         int idx = clientCnt - 1;
         ClientHandler curHandler = new ClientHandler(clientSocket, this, idx);
         Thread clientThread = new Thread(curHandler);
-        curHandler.returnObj(new SerializeObject("connected", "String"));
+        curHandler.setObject(new SerializeObject("connected", "String"));
         clientThread.start();
         players[idx] = new Player("", curHandler);
     }

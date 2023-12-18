@@ -133,6 +133,7 @@ public class GameController {
 
     // 클라이언트로 넘어온 쿼리 실행 함수
     public void excuteQuery(SerializeObject object, int index){
+        System.out.println("받은 객체 : " + object.getEventObject());
         switch (object.getObjectType()){
             case "String" :
                 String content = (String)object.getEventObject();
@@ -151,7 +152,7 @@ public class GameController {
                     players[index].setName(name);
                     view.updateNameLabel(name, index);
                     System.out.println(playersStr());
-                    server.notifiObservers(players[index].getClientHandler(), new SerializeObject(players, "Player[]"));
+                    server.notifiObservers(new SerializeObject(players, "Player[]"));
                 }
                 break;
 
@@ -159,7 +160,7 @@ public class GameController {
                 if(isServer) {
                     Player.ReadyState readyState = (Player.ReadyState) object.getEventObject();
                     changeReadyState(index, readyState);
-                    server.notifiObservers(players[index].getClientHandler(), new SerializeObject(players, "Player[]"));
+                    server.notifiObservers(new SerializeObject(players, "Player[]"));
                     break;
                 }
             default:
