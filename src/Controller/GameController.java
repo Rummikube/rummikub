@@ -76,13 +76,15 @@ public class GameController {
 
 
     public void connectRoom(String address) {
-        client = new Client();
+        client = new Client(this);
         isServer = false;
         String name = view.getNameTF().getText();
+        view.getLoginErrorLabel().setText("연결 중 입니다...");
         try {
+            // TODO
             client.connect(address, PORT, name);
+
             view.changePanel("RoomPanel");
-            curPlayer = new Player(name);
         } catch (UnknownHostException e) {
             view.getLoginErrorLabel().setText("IP주소로 접속할 수 없습니다. IP주소를 다시 확인해주세요.");
         } catch (NotEmptySpaceException e){
@@ -91,6 +93,64 @@ public class GameController {
             view.getLoginErrorLabel().setText("현재 게임이 진행 중인 방입니다.");
         }
     }
+
+
+    // 플레이어 ready 상태 변경 함수
+    public void changeReadyState(int index, Player.ReadyState readyState){
+        // ready
+        if(readyState == Player.ReadyState.READY && players[index].getReadyState() == Player.ReadyState.NOT_READY){
+            players[index].setReadyState(Player.ReadyState.READY);
+        }
+        // ready 해제
+        else if(readyState == Player.ReadyState.NOT_READY && players[index].getReadyState() == Player.ReadyState.READY){
+            players[index].setReadyState(Player.ReadyState.NOT_READY);
+        }
+        view.updateRoomReadyPanel(players[index].getReadyState(), index);
+    }
+
+    // 플레이어 정보 변경 함수
+    public void changePlayers(Player[] getPlayers){
+        // Model 플레이어 변경
+        players = getPlayers;
+
+        // 플레이어 정보 UI 적용
+        view.updatePlayers(players);
+    }
+
+
+    // 클라이언트로 넘어온 쿼리 실행 함수
+    public void excuteQuery(SerializeObject object, int index){
+        switch (object.getObjectType()){
+            case "String" :
+                String content = (String)object.getEventObject();
+
+                break;
+            case "Player[]":
+                Player[] getPlayers = (Player[]) object.getEventObject();
+                changePlayers(getPlayers);
+                break;
+
+            case "Name":
+                if(isServer) {
+                    String name = (String) object.getEventObject();
+                    players[index].setName(name);
+                    server.notifiObservers(players[index].getClientHandler(), new SerializeObject(players, "Player[]"));
+                }
+                break;
+
+            case "ReadyState" :
+                if(isServer) {
+                    Player.ReadyState readyState = (Player.ReadyState) object.getEventObject();
+                    changeReadyState(index, readyState);
+                    server.notifiObservers(players[index].getClientHandler(), new SerializeObject(players, "Player[]"));
+                    break;
+                }
+            default:
+                break;
+        }
+
+    }
+
  }
 
 

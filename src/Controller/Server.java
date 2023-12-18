@@ -10,17 +10,36 @@ public class Server {
 
     static int clientCnt = 0;
     static int port;
-    static ClientHandler[] handlers = new ClientHandler[GameController.MAX_PLAYER_COUNT];
-
+    static Player[] players;
     static private GameController gameController;
 
     public Server(int port, GameController gameController) {
         this.port = port;
         this.gameController = gameController;
+        players = gameController.getPlayers();
         openServer();
     }
 
-    static void openServer() {
+
+    public void notifiObservers(ClientHandler clientHandler, SerializeObject object){
+        for(int i = 0 ; i < GameController.MAX_PLAYER_COUNT ; i ++){
+            if(players[i] == null || players[i].getClientHandler() == clientHandler) continue;
+            ClientHandler curHandler = players[i].getClientHandler();
+            curHandler.returnObj(object);
+        }
+    }
+
+     private void addPlayer(Socket clientSocket){
+        clientCnt++;
+        int idx = clientCnt - 1;
+        ClientHandler curHandler = new ClientHandler(clientSocket, this, idx);
+        Thread clientThread = new Thread(curHandler);
+        clientThread.start();
+        curHandler.returnObj(new SerializeObject("connected", "String"));
+        players[idx] = new Player("", curHandler);
+    }
+
+    private void openServer() {
 
             Thread serverWaitThread = new Thread(new Runnable() {
                 @Override
@@ -40,14 +59,7 @@ public class Server {
 
                             if (clientCnt < 4 || GameController.gameState == GameController.GameState.FINISHED) {
                                 // 클라이언트와 통신하는 스레드 생성
-                                ClientHandler curHandler = new ClientHandler(clientSocket);
-                                clientCnt++;
-                                handlers[clientCnt - 1] = curHandler;
-                                Thread clientThread = new Thread(curHandler);
-                                clientThread.start();
-                                curHandler.returnObj(new SerializeObject("connected", "String"));
-                                String name = (String)curHandler.getAnswer().getEventObject(); // 플레이어 객체 받기
-                                gameController.getPlayers()[clientCnt - 1] = new Player(name);
+                                addPlayer(clientSocket);
                             } else {
                                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                                 if(clientCnt >= 4) {
@@ -69,64 +81,3 @@ public class Server {
             serverWaitThread.start();
         }
     }
-
-class ClientHandler implements Runnable {
-    private Socket clientSocket;
-    private PrintWriter out;
-    private BufferedReader in;
-    private ObjectOutputStream objectOutputStream;
-    private ObjectInputStream objectInputStream;
-    private SerializeObject result = null;
-    private boolean flag = true;
-
-    private SerializeObject obj = null;
-
-
-    // 클라이언트에 객체 전달
-    public synchronized void returnObj (SerializeObject obj){
-        this.obj = obj;
-        flag = false;
-        while(!flag){
-        }
-    }
-
-    public SerializeObject getAnswer(){
-        return result;
-    }
-
-    public synchronized void setFlag() {
-        flag = true;
-        notify(); // 메인 스레드에 flag 변경 알림
-    }
-
-
-    public ClientHandler(Socket socket) {
-        this.clientSocket = socket;
-        try {
-            objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (obj != null) {
-                objectOutputStream.writeObject(obj);
-                result = (SerializeObject) objectInputStream.readObject();
-                obj = null;
-                setFlag();
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-}
