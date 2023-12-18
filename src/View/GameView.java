@@ -79,8 +79,12 @@ public class GameView {
     public void updatePlayers(Player[] players){
             for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
             if(players[i] != null){
-                updateRoomReadyPanel(players[i].getReadyState(), i);
+                if(i == 0){
+                    roomReadyPanel[i].setBackground(Color.cyan);
+                }
+                else updateRoomReadyPanel(players[i].getReadyState(), i);
                 updateNameLabel(players[i].getName(), i);
+                roomPlayerPanel[i].setVisible(true);
             }
             else{
                 roomPlayerPanel[i].setVisible(false);

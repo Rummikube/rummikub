@@ -83,6 +83,7 @@ public class GameController {
     // 방 만드는 함수 - 서버
     public void makeRoom() {
         players[0] = new Player(view.getNameTF().getText());
+        players[0].setReadyState(Player.ReadyState.READY);
         view.updatePlayers(players);
         server = new Server(PORT, this);
         isServer = true;
