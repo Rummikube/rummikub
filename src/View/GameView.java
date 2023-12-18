@@ -77,7 +77,7 @@ public class GameView {
     }
 
     public void updatePlayers(Player[] players){
-        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
             if(players[i] != null){
                 updateRoomReadyPanel(players[i].getReadyState(), i);
                 updateNameLabel(players[i].getName(), i);
@@ -578,8 +578,11 @@ public class GameView {
                 JPanel RoomPlayerPanel = new JPanel();
                 roomPlayerPanel[i * 2 + j] = RoomPlayerPanel;
 //                RoomPlayerPanel.setBackground(Color.cyan);
+                JPanel tmpPanel = new JPanel();
+                tmpPanel.setPreferredSize(new Dimension(550, 310));
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
-                roomRowPanel.add(RoomPlayerPanel);
+                roomRowPanel.add(tmpPanel);
+                tmpPanel.add(RoomPlayerPanel, BorderLayout.CENTER);
                 RoomPlayerPanel.setLayout(new BorderLayout(0, 0));
 
                 JPanel readyPanel = new JPanel();
