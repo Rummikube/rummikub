@@ -11,6 +11,7 @@ public class Server {
     static int clientCnt = 1;
     static int port;
     static Player[] players;
+    static ClientHandler[] handlers = new ClientHandler[GameController.MAX_PLAYER_COUNT];
     static private GameController gameController;
 
 
@@ -25,8 +26,7 @@ public class Server {
         for (int i = 1; i < GameController.MAX_PLAYER_COUNT; i++) {
             if (players[i] == null) continue;
             System.out.println("notify => " + object.getEventObject());
-            ClientHandler curHandler = players[i].getClientHandler();
-            curHandler.setObject(object);
+            handlers[i].setObject(object);
         }
     }
 
@@ -41,7 +41,10 @@ public class Server {
         Thread clientThread = new Thread(curHandler);
         curHandler.setObject(new SerializeObject("connected", "String"));
         clientThread.start();
-        players[idx] = new Player("", curHandler);
+        handlers[idx] = curHandler;
+        players[idx] = new Player("");
+        System.out.println("플레이어 추가됨");
+        gameController.updatePlayers();
     }
 
     private void openServer() {

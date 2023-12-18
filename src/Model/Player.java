@@ -2,26 +2,25 @@ package Model;
 
 import Controller.ClientHandler;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 // 루미큐브 플레이어의 내용을 담근 객체
 
-public class Player {
+public class Player implements Serializable{
 
     public enum ReadyState{
         READY, NOT_READY;
     }
     private String name; // 유저의 이름
-    private ClientHandler clientHandler;
     private List<Tile> tiles; // 유저가 가지고 있는 타일들
 
     private ReadyState readyState = ReadyState.NOT_READY;
 
     // 유저 클래스의 생성자
-    public Player(String name, ClientHandler clientHandler) {
+    public Player(String name) {
         this.name = name;
-        this.clientHandler = clientHandler;
         this.tiles = new ArrayList<>(); // 타일 리스트 초기화
     }
 
@@ -57,12 +56,13 @@ public class Player {
         return readyState;
     }
 
-    public ClientHandler getClientHandler() {
-        return clientHandler;
-    }
 
     @Override
     public String toString() {
         return "name : " + name + " ReadyState : " + this.readyState;
     }
+    
+//    public PlayerDTO toDTO(){
+//        return new PlayerDTO(this.name, this.readyState);
+//    }
 }

@@ -1,6 +1,8 @@
 package Model;
 
-public class Tile {
+import java.io.Serializable;
+
+public class Tile implements Serializable {
     private int number; // 타일의 숫자 만약, 부기(조커)타일이라면 -1, -2
     private String color; // 타일의 색상
 

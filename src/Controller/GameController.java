@@ -82,8 +82,8 @@ public class GameController {
 
     // 방 만드는 함수 - 서버
     public void makeRoom() {
-        players[0] = new Player(view.getNameTF().getText(), null);
-        view.updateRoomNameLabel(view.getNameTF().getText(), 0);
+        players[0] = new Player(view.getNameTF().getText());
+        view.updatePlayers(players);
         server = new Server(PORT, this);
         isServer = true;
         // 뷰에서 화면 전환함수
@@ -119,6 +119,11 @@ public class GameController {
             players[index].setReadyState(Player.ReadyState.NOT_READY);
         }
         view.updateRoomReadyPanel(players[index].getReadyState(), index);
+    }
+
+    // 서버로 플레이어 추가시 서버 뷰 추가
+    public void updatePlayers(){
+        view.updatePlayers(players);
     }
 
     // 플레이어 정보 변경 함수
