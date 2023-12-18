@@ -44,6 +44,34 @@ public class GameView {
         }
     }
 
+    public void updateRoomNameLabel(String name, int index){
+        roomNameLabel[index].setText(name);
+    }
+
+    public JPanel[] getRoomReadyPanel() {
+        return roomReadyPanel;
+    }
+
+    public void setRoomReadyPanel(JPanel[] roomReadyPanel) {
+        this.roomReadyPanel = roomReadyPanel;
+    }
+
+    public JLabel[] getRoomNameLabel() {
+        return roomNameLabel;
+    }
+
+    public void setRoomNameLabel(JLabel[] roomNameLabel) {
+        this.roomNameLabel = roomNameLabel;
+    }
+
+    public JPanel[] getRoomPlayerPanel() {
+        return roomPlayerPanel;
+    }
+
+    public void setRoomPlayerPanel(JPanel[] roomPlayerPanel) {
+        this.roomPlayerPanel = roomPlayerPanel;
+    }
+
     public void updateNameLabel(String name, int index){
         roomNameLabel[index].setText(name);
     }

@@ -36,6 +36,20 @@ public class GameController {
 
     private Player[] players = new Player[MAX_PLAYER_COUNT];
 
+    public String playersStr() {
+        String tmp = "";
+        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] == null){
+                tmp += "null\n";
+            }
+            else {
+                tmp += players[i].toString() + "\n";
+                tmp += view.getRoomNameLabel()[i].getText() + "\n";
+            }
+        }
+        return tmp;
+    }
+
     public GameController(GameView view) {
         this.view = view;
         view.setGameController(this);
@@ -68,6 +82,8 @@ public class GameController {
 
     // 방 만드는 함수 - 서버
     public void makeRoom() {
+        players[0] = new Player(view.getNameTF().getText(), null);
+        view.updateRoomNameLabel(view.getNameTF().getText(), 0);
         server = new Server(PORT, this);
         isServer = true;
         // 뷰에서 화면 전환함수
@@ -76,15 +92,11 @@ public class GameController {
 
 
     public void connectRoom(String address) {
-        client = new Client(this);
+        view.getLoginErrorLabel().setText("연결 중 입니다...");
         isServer = false;
         String name = view.getNameTF().getText();
-        view.getLoginErrorLabel().setText("연결 중 입니다...");
         try {
-            // TODO
-            client.connect(address, PORT, name);
-
-            view.changePanel("RoomPanel");
+            client = new Client(this, address, PORT, name);
         } catch (UnknownHostException e) {
             view.getLoginErrorLabel().setText("IP주소로 접속할 수 없습니다. IP주소를 다시 확인해주세요.");
         } catch (NotEmptySpaceException e){
@@ -92,6 +104,7 @@ public class GameController {
         } catch (OnProgressException e){
             view.getLoginErrorLabel().setText("현재 게임이 진행 중인 방입니다.");
         }
+        view.changePanel("RoomPanel");
     }
 
 
@@ -125,6 +138,7 @@ public class GameController {
                 String content = (String)object.getEventObject();
 
                 break;
+
             case "Player[]":
                 Player[] getPlayers = (Player[]) object.getEventObject();
                 changePlayers(getPlayers);
@@ -132,8 +146,11 @@ public class GameController {
 
             case "Name":
                 if(isServer) {
+                    System.out.println(object.getEventObject() + " 플레이어 추가");
                     String name = (String) object.getEventObject();
                     players[index].setName(name);
+                    view.updateNameLabel(name, index);
+                    System.out.println(playersStr());
                     server.notifiObservers(players[index].getClientHandler(), new SerializeObject(players, "Player[]"));
                 }
                 break;

@@ -1,7 +1,10 @@
 package Controller;
 
+import jdk.swing.interop.SwingInterOpUtils;
+
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -21,11 +24,12 @@ public class ClientHandler implements Runnable {
 
     public void update(SerializeObject object){
         // 현재 오브젝트 파싱 및 처리
+        server.excute(object, index);
         server.notifiObservers(this, object);
     }
 
 
-    public ClientHandler(Socket socket, Server server, int index) {
+    public ClientHandler(Socket socket, Server server, int index) throws SocketException {
         this.clientSocket = socket;
         this.server = server;
         this.index = index;
@@ -39,15 +43,20 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("핸들러 스레드 실행중 ..,");
         try {
-            while (obj != null || (input = objectInputStream.readObject()) != null) {
-                // 입력
-                if(obj != null) {
-                    objectOutputStream.writeObject(obj);
-                    obj = null;
-                }
-                else {
-                    update((SerializeObject) input);
+            while (true) {
+                if(obj != null || (input = objectInputStream.readObject()) != null) {
+                    // 입력
+                    if (obj != null) {
+                        System.out.println("출력 추가됨 " + obj.getEventObject() + " ");
+                        objectOutputStream.writeObject(obj);
+                        obj = null;
+                    } else {
+                        SerializeObject sinput = (SerializeObject) input;
+                        System.out.println("입력 추가됨 " + sinput.getEventObject());
+                        update((SerializeObject) input);
+                    }
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
