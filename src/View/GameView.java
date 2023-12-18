@@ -2,15 +2,10 @@ package View;
 
 import Controller.GameController;
 
-import java.awt.FlowLayout;
+import java.awt.*;
 
 import javax.swing.*;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
 
-import java.awt.GridLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.regex.Matcher;
@@ -36,7 +31,6 @@ public class GameView {
     private JLabel[] roomNameLabel = new JLabel[MAX_PLAYER_COUNT];
 
     private GameController gameController;
-
 
     public void setGameController(GameController gameController){
         this.gameController = gameController;
@@ -130,13 +124,24 @@ public class GameView {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setLayout(new CardLayout(0, 0));
 
+
         // 로그인 패널 구현 부분
         JPanel LoginPanel = new JPanel();
         frame.getContentPane().add(LoginPanel, "LoginPanel");
         LoginPanel.setLayout(null);
 
+        // ADD BUGIKUB LOGO
+        ImageIcon bugi=new ImageIcon(new ImageIcon("asset/images/Bugikub.png").getImage());
+        JLabel bugiLogo=new JLabel();
+        bugiLogo.setIcon(bugi);
+
+
         JPanel panel = new JPanel();
         panel.setBounds(0, 0, 1584, 861);
+
+        //BackGroundColor
+        panel.setBackground(new Color(223, 241, 239));
+
         LoginPanel.add(panel);
         SpringLayout sl_panel = new SpringLayout();
         panel.setLayout(sl_panel);
@@ -195,6 +200,8 @@ public class GameView {
         panel.add(makeRoomButton);
 
         JPanel LoginImagePanel = new JPanel();
+        LoginImagePanel.add(bugiLogo);
+        LoginImagePanel.setBackground(new Color(223, 241,239));
         sl_panel.putConstraint(SpringLayout.NORTH, LoginImagePanel, 60, SpringLayout.NORTH, panel);
         sl_panel.putConstraint(SpringLayout.WEST, LoginImagePanel, 300, SpringLayout.WEST, panel);
         sl_panel.putConstraint(SpringLayout.SOUTH, LoginImagePanel, 320, SpringLayout.NORTH, panel);
@@ -238,7 +245,7 @@ public class GameView {
         sl_panel.putConstraint(SpringLayout.EAST, loginErrorLabel, -300, SpringLayout.EAST, panel);
         panel.add(loginErrorLabel);
 
-        // 게 패널 레이아웃 설정
+        // 게임 패널 레이아웃 설정
         JPanel GamePanel = new JPanel();
         frame.getContentPane().add(GamePanel, "GamePanel");
         GamePanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
