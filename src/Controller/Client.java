@@ -9,30 +9,21 @@ public class Client implements Runnable{
 
 
     private Socket curSocket;
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
+    private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
     private SerializeObject obj = null;
 
-    private SerializeObject result = null;
-    private boolean flag = true;
+    private Object input = null;
+    private GameController gameController;
+
+
+    public Client(GameController gameController){
+        this.gameController = gameController;
+    }
 
     // 서버에 객체 전달
     public synchronized void returnObj (SerializeObject obj){
         this.obj = obj;
-        flag = false;
-        while(!flag){
-        }
-    }
-
-    public SerializeObject getAnswer(){
-        return result;
-    }
-
-
-
-    public synchronized void setFlag() {
-        flag = true;
-        notify(); // 메인 스레드에 flag 변경 알림
     }
 
     public void connect(String address, int port, String name) throws UnknownHostException, NotEmptySpaceException, OnProgressException{
@@ -40,10 +31,10 @@ public class Client implements Runnable{
             System.out.println("연결을 시도합니다.");
             curSocket = new Socket(address, port);
             System.out.println(curSocket);
-            this.out = new ObjectOutputStream(curSocket.getOutputStream());
-            this.in = new ObjectInputStream(curSocket.getInputStream());
+            this.objectOutputStream = new ObjectOutputStream(curSocket.getOutputStream());
+            this.objectInputStream = new ObjectInputStream(curSocket.getInputStream());
 
-            SerializeObject answer = (SerializeObject)in.readObject();
+            SerializeObject answer = (SerializeObject) objectInputStream.readObject();
             String answerStr = (String)answer.getEventObject();
             returnObj(new SerializeObject("received", "String"));
             if(answerStr.equals("방이 가득찼습니다.")) {
@@ -55,7 +46,7 @@ public class Client implements Runnable{
 
             System.out.println("서버에 연결되었습니다.");
 
-            out.writeObject(new SerializeObject(name, "String"));
+            objectOutputStream.writeObject(new SerializeObject(name, "String"));
         }catch (IOException e){
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -66,11 +57,15 @@ public class Client implements Runnable{
     @Override
     public void run() {
         try {
-            while (obj != null) {
-                out.writeObject(obj);
-                result = (SerializeObject) in.readObject();
-                obj = null;
-                setFlag();
+            while (obj != null || (input = objectInputStream.readObject()) != null) {
+                // 입력
+                if(obj != null) {
+                    objectOutputStream.writeObject(obj);
+                    obj = null;
+                }
+                else {
+                    gameController.excuteQuery((SerializeObject) input, -1);
+                }
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();

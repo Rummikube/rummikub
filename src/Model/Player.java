@@ -1,26 +1,37 @@
 package Model;
 
+import Controller.ClientHandler;
+
 import java.util.ArrayList;
 import java.util.List;
 
-// 루미큐브 플레이어 객체
+// 루미큐브 플레이어의 내용을 담근 객체
+
 public class Player {
+
+    public enum ReadyState{
+        READY, NOT_READY;
+    }
     private String name; // 유저의 이름
+    private ClientHandler clientHandler;
     private List<Tile> tiles; // 유저가 가지고 있는 타일들
 
-    private int playerIdx = -1; // players 인덱스 번호
-
-    private int handlerIdx = -1; // clientHandler 인덱스 번호
+    private ReadyState readyState = ReadyState.NOT_READY;
 
     // 유저 클래스의 생성자
-    public Player(String name) {
+    public Player(String name, ClientHandler clientHandler) {
         this.name = name;
+        this.clientHandler = clientHandler;
         this.tiles = new ArrayList<>(); // 타일 리스트 초기화
     }
 
     // 이름을 반환하는 메서드
     public String getName() {
         return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
 
     // 유저가 가진 타일 리스트를 반환하는 메서드
@@ -38,21 +49,20 @@ public class Player {
         tiles.remove(tile);
     }
 
-    public int getHandlerIdx() {
-        return handlerIdx;
+    public void setReadyState(ReadyState changeReadyState){
+        this.readyState = changeReadyState;
     }
 
-    public void setHandlerIdx(int handlerIdx) {
-        this.handlerIdx = handlerIdx;
+    public ReadyState getReadyState(){
+        return readyState;
     }
 
-    public int getPlayerIdx() {
-        return playerIdx;
+    public ClientHandler getClientHandler() {
+        return clientHandler;
     }
 
-    public void setPlayerIdx(int playerIdx) {
-        this.playerIdx = playerIdx;
+    @Override
+    public String toString() {
+        return "name : " + name + " ReadyState : " + this.readyState;
     }
-
-    // 추가 유저 행동 메서드
 }

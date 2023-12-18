@@ -1,6 +1,7 @@
 package View;
 
 import Controller.GameController;
+import Model.Player;
 
 import java.awt.*;
 
@@ -30,7 +31,35 @@ public class GameView {
     private JPanel[] roomReadyPanel = new JPanel[MAX_PLAYER_COUNT];
     private JLabel[] roomNameLabel = new JLabel[MAX_PLAYER_COUNT];
 
+    private JPanel[] roomPlayerPanel = new JPanel[MAX_PLAYER_COUNT];
+
     private GameController gameController;
+
+    public void updateRoomReadyPanel(Player.ReadyState readyState, int index){
+        if(readyState == Player.ReadyState.READY){
+            roomReadyPanel[index].setBackground(Color.green);
+        }
+        else{
+            roomReadyPanel[index].setBackground(Color.red);
+        }
+    }
+
+    public void updateNameLabel(String name, int index){
+        roomNameLabel[index].setText(name);
+    }
+
+    public void updatePlayers(Player[] players){
+        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null){
+                updateRoomReadyPanel(players[i].getReadyState(), i);
+                updateNameLabel(players[i].getName(), i);
+            }
+            else{
+                roomPlayerPanel[i].setVisible(false);
+            }
+        }
+
+    }
 
     public void setGameController(GameController gameController){
         this.gameController = gameController;
@@ -519,6 +548,7 @@ public class GameView {
 
             for(int j = 0 ; j < 2 ; j ++) {
                 JPanel RoomPlayerPanel = new JPanel();
+                roomPlayerPanel[i * 2 + j] = RoomPlayerPanel;
 //                RoomPlayerPanel.setBackground(Color.cyan);
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
                 roomRowPanel.add(RoomPlayerPanel);
