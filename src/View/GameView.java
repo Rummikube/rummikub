@@ -6,9 +6,13 @@ import Model.Player;
 import java.awt.*;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -228,8 +232,9 @@ public class GameView {
 
         panel.add(makeRoomButton);
 
-        JPanel LoginImagePanel = new JPanel();
+        JPanel LoginImagePanel = new JPanel(/*new GridLayout(1,1,5,5)*/);
         LoginImagePanel.add(bugiLogo);
+        //LoginImagePanel.add(bugikubTitle);
         LoginImagePanel.setBackground(new Color(223, 241,239));
         sl_panel.putConstraint(SpringLayout.NORTH, LoginImagePanel, 60, SpringLayout.NORTH, panel);
         sl_panel.putConstraint(SpringLayout.WEST, LoginImagePanel, 300, SpringLayout.WEST, panel);
@@ -446,6 +451,7 @@ public class GameView {
 
         // 플레이어 방
         JPanel RoomPanel = new JPanel();
+        RoomPanel.setBackground(new Color(223, 241, 239));
         frame.getContentPane().add(RoomPanel, "RoomPanel");
         RoomPanel.setLayout(new BorderLayout(0, 0));
 
@@ -455,6 +461,7 @@ public class GameView {
         panel_11.setLayout(new BorderLayout(0, 0));
 
         JPanel panel_22 = new JPanel();
+        panel_22.setBackground(new Color(223, 241, 239));
         panel_11.add(panel_22, BorderLayout.CENTER);
         panel_22.setLayout(null);
 
@@ -474,21 +481,35 @@ public class GameView {
 
         JPanel panel_21 = new JPanel();
         panel_21.setPreferredSize(new Dimension(10, 30));
+        panel_21.setBackground(new Color(223,241,239));
         panel_19.add(panel_21, BorderLayout.NORTH);
 
         JPanel panel_27 = new JPanel();
         panel_27.setPreferredSize(new Dimension(30, 10));
+        panel_27.setBackground(new Color(223,241,239));
         panel_19.add(panel_27, BorderLayout.WEST);
 
         JPanel panel_28 = new JPanel();
         panel_28.setPreferredSize(new Dimension(30, 10));
+        panel_28.setBackground(new Color(223,241,239));
         panel_19.add(panel_28, BorderLayout.EAST);
 
         JPanel panel_31 = new JPanel();
         panel_31.setPreferredSize(new Dimension(10, 15));
+        panel_31.setBackground(new Color(223,241,239));
         panel_19.add(panel_31, BorderLayout.SOUTH);
 
-        startButton = new JButton("New button");
+        // start button
+        ImageIcon start=new ImageIcon(new ImageIcon("asset/images/start.png").getImage());
+        startButton = new JButton();
+        startButton.setIcon(start);
+        startButton.setBackground(new Color(223, 241, 239));
+        startButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+        startButton.setContentAreaFilled(false);
+        startButton.setFocusPainted(false);
+        startButton.setContentAreaFilled(false);
+        startButton.setOpaque(true);
+
         panel_19.add(startButton, BorderLayout.CENTER);
 
         JPanel panel_20 = new JPanel();
@@ -497,21 +518,35 @@ public class GameView {
 
         JPanel panel_24 = new JPanel();
         panel_24.setPreferredSize(new Dimension(10, 30));
+        panel_24.setBackground(new Color(223,241,239));
         panel_20.add(panel_24, BorderLayout.SOUTH);
 
         JPanel panel_29 = new JPanel();
         panel_29.setPreferredSize(new Dimension(30, 10));
+        panel_29.setBackground(new Color(223,241,239));
         panel_20.add(panel_29, BorderLayout.WEST);
 
         JPanel panel_30 = new JPanel();
         panel_30.setPreferredSize(new Dimension(30, 10));
+        panel_30.setBackground(new Color(223,241,239));
         panel_20.add(panel_30, BorderLayout.EAST);
 
         JPanel panel_32 = new JPanel();
         panel_32.setPreferredSize(new Dimension(10, 15));
+        panel_32.setBackground(new Color(223,241,239));
         panel_20.add(panel_32, BorderLayout.NORTH);
 
+        //ready button
+        ImageIcon ready=new ImageIcon(new ImageIcon("asset/images/ready.png").getImage());
         readyButton = new JButton("New button");
+        readyButton.setIcon(ready);
+        readyButton.setBackground(new Color(223, 241, 239));
+        readyButton.setBorder(new EmptyBorder(0,0,0,0));
+        readyButton.setContentAreaFilled(false);
+        readyButton.setFocusPainted(false);
+        readyButton.setContentAreaFilled(false);
+        readyButton.setOpaque(true);
+
         panel_20.add(readyButton, BorderLayout.CENTER);
 
         JPanel panel_13 = new JPanel();
@@ -520,22 +555,27 @@ public class GameView {
 
         JPanel panel_14 = new JPanel();
         panel_14.setPreferredSize(new Dimension(50, 10));
+        panel_14.setBackground(new Color(223,241,239));
         panel_13.add(panel_14, BorderLayout.WEST);
 
         JPanel panel_15 = new JPanel();
         panel_15.setPreferredSize(new Dimension(50, 10));
+        panel_15.setBackground(new Color(223,241,239));
         panel_13.add(panel_15, BorderLayout.EAST);
 
         JPanel panel_16 = new JPanel();
         panel_16.setPreferredSize(new Dimension(10, 50));
+        panel_16.setBackground(new Color(223,241,239));
         panel_13.add(panel_16, BorderLayout.NORTH);
 
         JPanel panel_17 = new JPanel();
         panel_17.setPreferredSize(new Dimension(10, 50));
+        panel_17.setBackground(new Color(223,241,239));
         panel_13.add(panel_17, BorderLayout.SOUTH);
 
         JPanel panel_18 = new JPanel();
         panel_13.add(panel_18, BorderLayout.CENTER);
+        panel_18.setBackground(new Color(223,241,239));
         panel_18.setLayout(new GridLayout(2, 2, 50, 20));
 
 
@@ -544,12 +584,12 @@ public class GameView {
             FlowLayout fl_playerRoomRow1 = (FlowLayout) roomRowPanel.getLayout();
             fl_playerRoomRow1.setHgap(30);
             panel_18.add(roomRowPanel);
-//            roomRowPanel.setBackground(Color.black);
+            roomRowPanel.setBackground(new Color(223, 241, 239));
 
             for(int j = 0 ; j < 2 ; j ++) {
                 JPanel RoomPlayerPanel = new JPanel();
                 roomPlayerPanel[i * 2 + j] = RoomPlayerPanel;
-//                RoomPlayerPanel.setBackground(Color.cyan);
+                RoomPlayerPanel.setBackground(new Color(0, 144, 81));
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
                 roomRowPanel.add(RoomPlayerPanel);
                 RoomPlayerPanel.setLayout(new BorderLayout(0, 0));
@@ -563,16 +603,21 @@ public class GameView {
                 JPanel tmp1 = new JPanel();
                 RoomPlayerPanel.add(tmp1, BorderLayout.CENTER);
                 tmp1.setLayout(new BorderLayout(0, 0));
+                tmp1.setBackground(new Color(223,241,239));
 
                 JPanel tmp2 = new JPanel();
                 tmp2.setPreferredSize(new Dimension(110, 10));
                 tmp1.add(tmp2, BorderLayout.WEST);
+                tmp2.setBackground(new Color(223,241,239));
 
                 JPanel tmp3 = new JPanel();
                 tmp3.setPreferredSize(new Dimension(110, 10));
                 tmp1.add(tmp3, BorderLayout.EAST);
+                tmp3.setBackground(new Color(223,241,239));
 
-                JLabel playerImageLabel = new JLabel("player_Image");
+                ImageIcon empProfileIcon=new ImageIcon(new ImageIcon("asset/images/emptyProfile.png").getImage());
+                JLabel playerImageLabel = new JLabel();
+                playerImageLabel.setIcon(empProfileIcon);
                 playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
                 tmp1.add(playerImageLabel, BorderLayout.CENTER);
 
