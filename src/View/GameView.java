@@ -9,8 +9,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +25,13 @@ public class GameView {
     private JTextField nameTF, addressTF;
     private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton, readyButton, startButton;
     private JLabel loginErrorLabel, roomNoticePanel;
+
+    private JPanel curClickedPanel;
+    private boolean isDragging = false;
+    private Point originalPoint;
+
+    int offsetX = 0;
+    int offsetY = 0;
 
     private JPanel[][] board = new JPanel[BOARD_HEIGHT][BOARD_WIDTH]; // 보드의 타일들
 
@@ -406,10 +412,12 @@ public class GameView {
 
         JPanel westPanel = new JPanel();
         westPanel.setPreferredSize(new Dimension(150, 1));
+        westPanel.setOpaque(false);
         panel_1.add(westPanel, BorderLayout.WEST);
 
         JPanel eastPanel = new JPanel();
         eastPanel.setPreferredSize(new Dimension(150, 1));
+        eastPanel.setOpaque(false);
         panel_1.add(eastPanel, BorderLayout.EAST);
 
         JPanel HandLayoutPanel = new JPanel();
@@ -491,6 +499,37 @@ public class GameView {
                 tmpLabel.setBounds(10, 15, 60, 60);
                 tmpLabel.setOpaque(false);
                 hand[i][j].add(tmpLabel);
+
+                tmp.addMouseListener(new MouseAdapter() {
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        curClickedPanel = tmp;
+                        originalPoint = tmp.getLocation();
+                        offsetX = e.getX();
+                        offsetY = e.getY();
+                        isDragging = true;
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        System.out.println(e.getXOnScreen() + " " + e.getYOnScreen());
+                        tmp.setVisible(false);
+                        curClickedPanel = null;
+                        originalPoint = null;
+                        isDragging = false;
+                    }
+                });
+                tmp.addMouseMotionListener(new MouseMotionAdapter() {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        if(isDragging){
+                            int newX = curClickedPanel.getX() + e.getX() - offsetX;
+                            int newY = curClickedPanel.getY() + e.getY() - offsetY;
+                            curClickedPanel.setLocation(newX, newY);
+                        }
+                    }
+                });
             }
         }
 
