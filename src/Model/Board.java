@@ -20,6 +20,14 @@ public class Board implements Serializable {
         return tiles;
     }
 
+    public Tile getTile(int row, int col){
+        return tiles[row][col];
+    }
+
+    public void setTile(int row,  int col, Tile tile){
+        tiles[row][col] = tile;
+    }
+
     // 변경이전의 보드 상태를 반환하는 함수
     public Tile[][] getLastBoardState(){
         Tile[][] newTiles = new Tile[BOARD_HEIGHT][BOARD_WIDTH];
@@ -33,9 +41,8 @@ public class Board implements Serializable {
 
 
     // 타일을 보드판에 추가하는 메서드 => 보드판에 추가 가능하면 true, 불가능하면 false 반환
-    public boolean canAddTile(Tile tile, int tileRow, int tileCol) {
+    public boolean canAddTile(int tileRow, int tileCol) {
         if(tiles[tileRow][tileCol] == null){
-            tiles[tileRow][tileCol] = tile;
             return true;
         }
         else return false;
@@ -83,7 +90,7 @@ public class Board implements Serializable {
                 num = cur.getNumber();
             }
             else{
-                if(!color.equals(cur.getColor()) || num + 1 != cur.getNumber()){ // 색이 다르거나 번호가 Run이 아닌 경우
+                if(!color.equals(cur.getColor ()) || num + 1 != cur.getNumber()){ // 색이 다르거나 번호가 Run이 아닌 경우
                     return false;
                 }
             }

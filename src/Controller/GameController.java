@@ -6,9 +6,11 @@ import Model.*;
 import View.GameView;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 import java.net.UnknownHostException;
+import java.util.List;
 
 // 서버 플레이어가 게임 진행을 관리
 public class GameController {
@@ -46,6 +48,11 @@ public class GameController {
 
     private Player[] players = new Player[MAX_PLAYER_COUNT];
 
+
+    public boolean canAdd(int row, int col){
+        return boardTiles.canAddTile(row, col);
+    }
+
     public String playersStr() {
         String tmp = "";
         for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
@@ -58,6 +65,10 @@ public class GameController {
             }
         }
         return tmp;
+    }
+
+    public boolean isInMyTurn(){
+        return isMyTurn;
     }
 
     public GameController(GameView view) {
@@ -96,17 +107,41 @@ public class GameController {
 
     // 방 만드는 함수 - 서버
     public void makeRoom() {
-        view.changePanel("GamePanel");
-//        players[0] = new Player(view.getNameTF().getText());
-//        players[0].setReadyState(Player.ReadyState.READY);
-//        index = 0;
-//        view.updatePlayers(players);
-//        server = new Server(PORT, this);
-//        isServer = true;
-//        // 뷰에서 화면 전환함수
-//        view.changePanel("RoomPanel");
+        players[0] = new Player(view.getNameTF().getText());
+        players[0].setReadyState(Player.ReadyState.READY);
+        index = 0;
+        view.updatePlayers(players);
+        server = new Server(PORT, this);
+        isServer = true;
+        // 뷰에서 화면 전환함수
+        view.changePanel("RoomPanel");
     }
 
+
+    public void changeTiles(boolean startInBoard, boolean endInBoard, int sr, int sc, int er, int ec){
+        Tile start = startInBoard ? boardTiles.getTile(sr, sc) : handTiles[sr][sc];
+        Tile end = endInBoard ? boardTiles.getTile(er, ec) : handTiles[er][ec];
+
+        if(startInBoard) {
+            boardTiles.setTile(sr, sc, end);
+            if(endInBoard){
+                boardTiles.setTile(er, ec, start);
+            }
+            else{
+                System.out.println("에러 발생");
+                handTiles[er][ec] = start;
+            }
+        }
+        else{
+            handTiles[sr][sc] = end;
+            if(endInBoard){
+                boardTiles.setTile(er, ec, start);
+            }
+            else{
+                handTiles[er][ec] = start;
+            }
+        }
+    }
 
     public void connectRoom(String address) {
         view.getLoginErrorLabel().setText("연결 중 입니다...");
