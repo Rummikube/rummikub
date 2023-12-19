@@ -48,15 +48,47 @@ public class GameView {
         }
     }
 
+    public void updateRoomNameLabel(String name, int index){
+        roomNameLabel[index].setText(name);
+    }
+
+    public JPanel[] getRoomReadyPanel() {
+        return roomReadyPanel;
+    }
+
+    public void setRoomReadyPanel(JPanel[] roomReadyPanel) {
+        this.roomReadyPanel = roomReadyPanel;
+    }
+
+    public JLabel[] getRoomNameLabel() {
+        return roomNameLabel;
+    }
+
+    public void setRoomNameLabel(JLabel[] roomNameLabel) {
+        this.roomNameLabel = roomNameLabel;
+    }
+
+    public JPanel[] getRoomPlayerPanel() {
+        return roomPlayerPanel;
+    }
+
+    public void setRoomPlayerPanel(JPanel[] roomPlayerPanel) {
+        this.roomPlayerPanel = roomPlayerPanel;
+    }
+
     public void updateNameLabel(String name, int index){
         roomNameLabel[index].setText(name);
     }
 
     public void updatePlayers(Player[] players){
-        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
             if(players[i] != null){
-                updateRoomReadyPanel(players[i].getReadyState(), i);
+                if(i == 0){
+                    roomReadyPanel[i].setBackground(Color.cyan);
+                }
+                else updateRoomReadyPanel(players[i].getReadyState(), i);
                 updateNameLabel(players[i].getName(), i);
+                roomPlayerPanel[i].setVisible(true);
             }
             else{
                 roomPlayerPanel[i].setVisible(false);
@@ -590,8 +622,12 @@ public class GameView {
                 JPanel RoomPlayerPanel = new JPanel();
                 roomPlayerPanel[i * 2 + j] = RoomPlayerPanel;
                 RoomPlayerPanel.setBackground(new Color(0, 144, 81));
+//                RoomPlayerPanel.setBackground(Color.cyan);
+                JPanel tmpPanel = new JPanel();
+                tmpPanel.setPreferredSize(new Dimension(550, 310));
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
-                roomRowPanel.add(RoomPlayerPanel);
+                roomRowPanel.add(tmpPanel);
+                tmpPanel.add(RoomPlayerPanel, BorderLayout.CENTER);
                 RoomPlayerPanel.setLayout(new BorderLayout(0, 0));
 
                 JPanel readyPanel = new JPanel();

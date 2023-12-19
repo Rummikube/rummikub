@@ -2,10 +2,11 @@ package Model;
 
 import Controller.GameController;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Board {
+public class Board implements Serializable {
     final int BOARD_WIDTH = GameController.BOARD_WIDTH; // 보드판 가로 길이
     final int BOARD_HEIGHT = GameController.BOARD_HEIGHT; // 보드판 세로 길이
 

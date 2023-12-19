@@ -15,13 +15,13 @@ public class ClientHandler implements Runnable {
 
 
     // 클라이언트에 객체 전달
-    public void returnObj (SerializeObject obj){
+    public void setObject(SerializeObject obj){
         this.obj = obj;
     }
 
     public void update(SerializeObject object){
         // 현재 오브젝트 파싱 및 처리
-        server.notifiObservers(this, object);
+        server.excute(object, index);
     }
 
 
@@ -40,14 +40,18 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            while (obj != null || (input = objectInputStream.readObject()) != null) {
-                // 입력
-                if(obj != null) {
-                    objectOutputStream.writeObject(obj);
-                    obj = null;
-                }
-                else {
-                    update((SerializeObject) input);
+            while (true) {
+                if(obj != null || (input = objectInputStream.readObject()) != null) {
+                    // 입력
+                    if (obj != null) {
+                        System.out.println("출력 추가됨 " + obj.getEventObject() + " ");
+                        objectOutputStream.writeObject(obj);
+                        obj = null;
+                    } else {
+                        SerializeObject sinput = (SerializeObject) input;
+                        System.out.println("입력 추가됨 " + sinput.getEventObject());
+                        update((SerializeObject) input);
+                    }
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
