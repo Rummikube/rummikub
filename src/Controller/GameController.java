@@ -96,14 +96,15 @@ public class GameController {
 
     // 방 만드는 함수 - 서버
     public void makeRoom() {
-        players[0] = new Player(view.getNameTF().getText());
-        players[0].setReadyState(Player.ReadyState.READY);
-        index = 0;
-        view.updatePlayers(players);
-        server = new Server(PORT, this);
-        isServer = true;
-        // 뷰에서 화면 전환함수
-        view.changePanel("RoomPanel");
+        view.changePanel("GamePanel");
+//        players[0] = new Player(view.getNameTF().getText());
+//        players[0].setReadyState(Player.ReadyState.READY);
+//        index = 0;
+//        view.updatePlayers(players);
+//        server = new Server(PORT, this);
+//        isServer = true;
+//        // 뷰에서 화면 전환함수
+//        view.changePanel("RoomPanel");
     }
 
 

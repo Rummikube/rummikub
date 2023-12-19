@@ -406,91 +406,46 @@ public class GameView {
         panel_3.setLayout(new BorderLayout(0, 0));
         GamePanel.add(panel_3);
 
-        JPanel panel_1 = new JPanel();
-        panel_3.add(panel_1, BorderLayout.SOUTH);
-        panel_1.setLayout(new BorderLayout(0, 0));
-
-        JPanel westPanel = new JPanel();
-        westPanel.setPreferredSize(new Dimension(150, 1));
-        westPanel.setOpaque(false);
-        panel_1.add(westPanel, BorderLayout.WEST);
-
-        JPanel eastPanel = new JPanel();
-        eastPanel.setPreferredSize(new Dimension(150, 1));
-        eastPanel.setOpaque(false);
-        panel_1.add(eastPanel, BorderLayout.EAST);
-
-        JPanel HandLayoutPanel = new JPanel();
-        HandLayoutPanel.setPreferredSize(new Dimension(1, 250));
-        panel_1.add(HandLayoutPanel, BorderLayout.CENTER);
-        HandLayoutPanel.setLayout(new BorderLayout(0, 0));
-
-        JPanel HandWestPanel = new JPanel();
-        HandWestPanel.setPreferredSize(new Dimension(20, 1));
-        HandLayoutPanel.add(HandWestPanel, BorderLayout.WEST);
-
-        JPanel HandEastPanel = new JPanel();
-        HandEastPanel.setPreferredSize(new Dimension(20, 1));
-        HandLayoutPanel.add(HandEastPanel, BorderLayout.EAST);
-
-        JPanel HandPanel = new JPanel();
-        HandLayoutPanel.add(HandPanel, BorderLayout.CENTER);
-        HandPanel.setLayout(new GridLayout(2, 10, 0, 0));
-
-        JPanel panell = new JPanel();
-        panell.setPreferredSize(new Dimension(10, 20));
-        panel_1.add(panell, BorderLayout.SOUTH);
-
         JPanel panel_5 = new JPanel();
         panel_3.add(panel_5, BorderLayout.CENTER);
         panel_5.setLayout(new BorderLayout(0, 0));
 
-        JPanel panel_6 = new JPanel();
-        panel_6.setPreferredSize(new Dimension(1, 20));
-        panel_5.add(panel_6, BorderLayout.NORTH);
-
-        JPanel panel_7 = new JPanel();
-        panel_5.add(panel_7, BorderLayout.CENTER);
-        panel_7.setLayout(new BorderLayout(0, 0));
-
-        JPanel panel_8 = new JPanel();
-        panel_8.setPreferredSize(new Dimension(15, 10));
-        panel_7.add(panel_8, BorderLayout.WEST);
-
-        JPanel panel_9 = new JPanel();
-        panel_9.setPreferredSize(new Dimension(15, 10));
-        panel_7.add(panel_9, BorderLayout.EAST);
-
         JPanel BoardPanel = new JPanel();
-        panel_7.add(BoardPanel, BorderLayout.CENTER);
-        BoardPanel.setLayout(new GridLayout(BOARD_HEIGHT, BOARD_WIDTH, 0, 5));
+        panel_5.add(BoardPanel, BorderLayout.CENTER);
+        BoardPanel.setLayout(null);
+        BoardPanel.setPreferredSize(new Dimension(1150, 10));
 
+
+        int boardY = 20;
         // board 배열에 패널 추가
         for (int i = 0; i < BOARD_HEIGHT; i++) {
-            JPanel curRowPanel = new JPanel();
-            BoardPanel.add(curRowPanel);
+            int boardX = 95;
             for (int j = 0; j < BOARD_WIDTH; j++) {
                 JPanel tmp = new JPanel();
                 board[i][j] = tmp;
-                curRowPanel.add(tmp);
-                board[i][j].setPreferredSize(new Dimension(50, 75));
+                BoardPanel.add(tmp);
+                board[i][j].setBounds(boardX, boardY, 50, 75);
                 board[i][j].setBackground(Color.black);
+                boardX += 55;
             }
+            boardY += 80;
         }
 
 
+
+
+        int handY = 600;
         Font tileNumFont = new Font("Arial", Font.BOLD, 40);
         // hand 배열에 패널 추가
         for (int i = 0; i < HAND_HEIGHT; i++) {
-            JPanel curRowPanel = new JPanel();
-            HandPanel.add(curRowPanel);
+            int handX = 220;
             for (int j = 0; j < HAND_WIDTH; j++) {
                 JPanel tmp = new JPanel();
                 hand[i][j] = tmp;
-                curRowPanel.add(tmp);
-                hand[i][j].setPreferredSize(new Dimension(80, 120));
+                BoardPanel.add(tmp);
                 hand[i][j].setBackground(Color.yellow);
                 hand[i][j].setLayout(null);
+                hand[i][j].setBounds(handX, handY, 80, 120);
                 JLabel tmpLabel = new JLabel("");
                 tileNumberLabel[i][j] = tmpLabel;
                 tmpLabel.setForeground(Color.cyan);
@@ -499,12 +454,14 @@ public class GameView {
                 tmpLabel.setBounds(10, 15, 60, 60);
                 tmpLabel.setOpaque(false);
                 hand[i][j].add(tmpLabel);
+                handX += 85;
 
                 tmp.addMouseListener(new MouseAdapter() {
 
                     @Override
                     public void mousePressed(MouseEvent e) {
                         curClickedPanel = tmp;
+                        System.out.println("presssed");
                         originalPoint = tmp.getLocation();
                         offsetX = e.getX();
                         offsetY = e.getY();
@@ -513,8 +470,8 @@ public class GameView {
 
                     @Override
                     public void mouseReleased(MouseEvent e) {
-                        System.out.println(e.getXOnScreen() + " " + e.getYOnScreen());
-                        tmp.setVisible(false);
+                        System.out.println("released");
+                        curClickedPanel.setLocation(originalPoint);
                         curClickedPanel = null;
                         originalPoint = null;
                         isDragging = false;
@@ -531,6 +488,7 @@ public class GameView {
                     }
                 });
             }
+            handY += 125;
         }
 
 
