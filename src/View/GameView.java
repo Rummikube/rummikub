@@ -2,17 +2,15 @@ package View;
 
 import Controller.GameController;
 import Model.Player;
+import Model.Tile;
 
 import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +26,7 @@ public class GameView {
     private JTextField nameTF, addressTF;
     private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton, readyButton, startButton;
     private JLabel loginErrorLabel, roomNoticePanel;
+
     private JPanel[][] board = new JPanel[BOARD_HEIGHT][BOARD_WIDTH]; // 보드의 타일들
 
     private JPanel[][] hand = new JPanel[HAND_HEIGHT][HAND_WIDTH];
@@ -35,6 +34,7 @@ public class GameView {
     private JPanel[] roomReadyPanel = new JPanel[MAX_PLAYER_COUNT];
     private JLabel[] roomNameLabel = new JLabel[MAX_PLAYER_COUNT];
 
+    private JLabel[][] tileNumberLabel = new JLabel[HAND_HEIGHT][HAND_WIDTH];
     private JPanel[] roomPlayerPanel = new JPanel[MAX_PLAYER_COUNT];
 
     private GameController gameController;
@@ -46,6 +46,51 @@ public class GameView {
         else{
             roomReadyPanel[index].setBackground(Color.red);
         }
+    }
+
+    public void updateTile(String color, int num, int row, int col){
+        Color fontColor;
+        JLabel curLabel = tileNumberLabel[row][col];
+        if(color.equals("Red")){
+            fontColor = Color.red;
+        }
+        else if(color.equals("Orange")){
+            fontColor = Color.orange;
+        }
+        else if(color.equals("Blue")){
+            fontColor = Color.blue;
+        }
+        else if(color.equals("Black")){
+            fontColor = Color.BLACK;
+        }
+        else{
+            //TODO 부기 이미지로 변경
+            curLabel.setForeground(Color.cyan);
+            curLabel.setText("14");
+            return;
+        }
+        curLabel.setForeground(fontColor);
+        curLabel.setText(String.valueOf(num));
+    }
+
+    public void setInvisibleTile(int row, int col, boolean isHand){
+        if(isHand){
+            hand[row][col].setVisible(false);
+        }
+        else{
+            board[row][col].setVisible(false);
+        }
+    }
+
+    public void setTransParentPanel(int row, int col, boolean isHand){
+        JPanel[][] curPanel;
+        if(isHand){
+            curPanel = hand;
+        }
+        else{
+            curPanel = board;
+        }
+        curPanel[row][col].setOpaque(false);
     }
 
     public void updateRoomNameLabel(String name, int index){
@@ -148,6 +193,7 @@ public class GameView {
 
     // 패널 전환 함수 LoginPanel, RoomPanel, GamePanel
     public void changePanel(String panelName){
+        System.out.println(panelName + "패널로 변경합니다.");
         CardLayout cardLayout = (CardLayout)frame.getContentPane().getLayout();
         cardLayout.show(frame.getContentPane(), panelName);
     }
@@ -424,6 +470,8 @@ public class GameView {
             }
         }
 
+
+        Font tileNumFont = new Font("Arial", Font.BOLD, 40);
         // hand 배열에 패널 추가
         for (int i = 0; i < HAND_HEIGHT; i++) {
             JPanel curRowPanel = new JPanel();
@@ -433,7 +481,16 @@ public class GameView {
                 hand[i][j] = tmp;
                 curRowPanel.add(tmp);
                 hand[i][j].setPreferredSize(new Dimension(80, 120));
-                hand[i][j].setBackground(Color.black);
+                hand[i][j].setBackground(Color.yellow);
+                hand[i][j].setLayout(null);
+                JLabel tmpLabel = new JLabel("");
+                tileNumberLabel[i][j] = tmpLabel;
+                tmpLabel.setForeground(Color.cyan);
+                tmpLabel.setFont(tileNumFont);
+                tmpLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                tmpLabel.setBounds(10, 15, 60, 60);
+                tmpLabel.setOpaque(false);
+                hand[i][j].add(tmpLabel);
             }
         }
 
@@ -463,12 +520,24 @@ public class GameView {
         // Run 정렬 버튼
         RunSortButton = new JButton("New button");
         RunSortButton.setBounds(12, 45, 126, 123);
+        RunSortButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gameController.sortByRun();
+            }
+        });
         panel_4.add(RunSortButton);
 
 
         // Group 정렬 버튼
         GroupSortButton = new JButton("New button");
         GroupSortButton.setBounds(12, 178, 126, 107);
+        GroupSortButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gameController.sortByGroup();
+            }
+        });
         panel_4.add(GroupSortButton);
 
         JPanel panel_10 = new JPanel();
@@ -542,12 +611,14 @@ public class GameView {
         startButton.setContentAreaFilled(false);
         startButton.setOpaque(true);
 
+
+        // 시작 버튼 리스너
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if(gameController.getIndex() == 0){
                     if(gameController.checkReady()){
-                        gameController.changeGamePanel();
+                        gameController.serverStartGame();
                     }
                     else{
                         roomNoticePanel.setText("모든 사람이 준비를 해야 시작할 수 있습니다.");

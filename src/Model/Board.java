@@ -16,9 +16,12 @@ public class Board implements Serializable {
         tiles = new Tile[BOARD_HEIGHT][BOARD_WIDTH];
     }
 
+    public Tile[][] getTiles() {
+        return tiles;
+    }
 
     // 변경이전의 보드 상태를 반환하는 함수
-    private Tile[][] getLastBoardState(){
+    public Tile[][] getLastBoardState(){
         Tile[][] newTiles = new Tile[BOARD_HEIGHT][BOARD_WIDTH];
         for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
             for(int j = 0 ; j < BOARD_WIDTH ; j ++){
@@ -67,11 +70,6 @@ public class Board implements Serializable {
         return true; // 반환값
     }
 
-    // 보드판 상태를 출력하는 메서드
-    public void displayBoard() {
-        // 보드판 상태 출력 로직
-        // TODO
-    }
 
     // 타일 세트가 Run 상태인지
     private boolean isRun(int start, int end, int row){

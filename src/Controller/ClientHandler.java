@@ -42,7 +42,7 @@ public class ClientHandler{
             e.printStackTrace();
         }
     }
-1
+
     class ServerOutput implements Runnable{
         private ObjectOutputStream objectOutputStream;
         private Socket serverSocket;

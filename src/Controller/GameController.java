@@ -2,8 +2,11 @@ package Controller;
 
 import Exceptions.NotEmptySpaceException;
 import Exceptions.OnProgressException;
-import Model.Player;
+import Model.*;
 import View.GameView;
+
+import javax.swing.*;
+import java.util.*;
 
 import java.net.UnknownHostException;
 
@@ -35,6 +38,11 @@ public class GameController {
 
     public Player curPlayer;
 
+    public Tile[][] handTiles;
+
+    public Board boardTiles;
+    private boolean isTurnProgress = false;
+    private boolean isMyTurn = false;
 
     private Player[] players = new Player[MAX_PLAYER_COUNT];
 
@@ -142,12 +150,6 @@ public class GameController {
     }
 
 
-    // 게임 패널로 전환
-    public void changeGamePanel(){
-        // TODO 데이터 전송 및 UI 연동
-        view.changePanel("GamePanel");
-    }
-
     // 서버로 플레이어 추가시 서버 뷰 추가
     public void updatePlayers(){
         view.updatePlayers(players);
@@ -172,6 +174,184 @@ public class GameController {
         return true;
     }
 
+    // 메인 게임 함수
+    public void serverStartGame(){
+        gameState = GameState.IN_PROGRESS;
+        // 게임 관리 객체 생성
+        Game game = new Game(players);
+        // 게임 타일 객체 생성
+
+        int playerCnt = game.getPlayerCount();
+        // 플레이어들에게 첫 손패 타일 전달
+        distributeTiles(game.getTileDeck());
+        updateHandTiles();
+        boardTiles = game.getBoard();
+        updateBoardTiles();
+        server.notifiObservers(new SerializeObject(boardTiles, "Board", 0), 0);
+
+
+        // 클라이언트들에게 게임 시작을 알림
+        server.notifiObservers(new SerializeObject("startGame", "String", 0), 0);
+
+        System.out.println("게임 패널 변경");
+        view.changePanel("GamePanel");
+
+
+
+        manageGameProcess(game);
+
+        for(int i = 1 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null){
+                players[i].setReadyState(Player.ReadyState.NOT_READY);
+            }
+        }
+
+        server.notifiObservers(new SerializeObject(players, "Player[]", 0), 0);
+
+        server.notifiObservers(new SerializeObject("finishGame", "String", 0), 0);
+        view.updatePlayers(players);
+        view.changePanel("RoomPanel");
+    }
+
+    public void startTurn(){
+        isMyTurn = true;
+        Tile[][] lastBoard = boardTiles.getLastBoardState();
+
+    }
+
+
+
+    public void manageGameProcess(Game game){
+        while(true){
+            isTurnProgress = true;
+            server.notifiObservers(new SerializeObject(game.getCurrentPlayerIndex(), "Turn", 0), 0);
+            if(game.getCurrentPlayerIndex() == 0){
+                startTurn();
+            }
+
+            while(isTurnProgress){
+            }
+
+            if(canFinish(game.getTileDeck())) break;
+        }
+    }
+
+    public boolean canFinish(TileDeck tileDeck){
+        if(tileDeck.isEmpty()) return true;
+        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null && players[i].getTileCount() == 0) return true;
+        }
+        return false;
+    }
+
+    public void distributeTiles(TileDeck tileDeck){
+        handTiles = tileDeck.getFirstHandTiles(HAND_HEIGHT, HAND_WIDTH);
+        for(int i = 1 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null){
+                server.notifiObservers(new SerializeObject(tileDeck.getFirstHandTiles(HAND_HEIGHT, HAND_WIDTH), "Hand", i), 0);
+                server.notifiObservers(new SerializeObject(TileDeck.TILES_PER_PLAYER, "TileCount", i), 0);
+                players[i].setTileCount(TileDeck.TILES_PER_PLAYER);
+            }
+        }
+    }
+
+    public void clientStartGame(){
+
+    }
+
+
+    // 핸드 UI 적용
+    public void updateHandTiles(){
+        System.out.println("타일 UI 업데이트");
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                Tile cur = handTiles[i][j];
+                if(cur == null) {
+                    view.setTransParentPanel(i, j, true);
+                    continue;
+                }
+                view.updateTile(cur.getColor(), cur.getNumber(), i, j);
+            }
+        }
+    }
+
+    // 보드 UI 적용
+    public void updateBoardTiles(){
+        Tile[][] tiles = boardTiles.getTiles();
+        System.out.println("보드 UI 업데이트");
+        for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
+            for(int j = 0 ; j < BOARD_WIDTH ; j ++){
+                Tile cur = tiles[i][j];
+                if(cur == null){
+                    view.setTransParentPanel(i, j, false);
+                    continue;
+                }
+                view.updateTile(cur.getColor(), cur.getNumber(), i, j);
+            }
+        }
+    }
+
+    public void sortByRun(){
+        ArrayList<Tile> tmp = new ArrayList<>();
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                if(handTiles[i][j] != null){
+                    tmp.add(handTiles[i][j]);
+                }
+            }
+        }
+
+        Collections.sort(tmp, (tile1, tile2) -> Integer.compare(tile1.getNumber(), tile2.getNumber()));
+        int idx = 0;
+        for(int i = 0 ; i < HAND_HEIGHT * HAND_WIDTH ; i ++){
+            if(i < tmp.size()){
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = tmp.get(i);
+            }
+            else{
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = null;
+            }
+        }
+
+        updateHandTiles();
+    }
+
+    public void sortByGroup(){
+        ArrayList<Tile> tmp = new ArrayList<>();
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                if(handTiles[i][j] != null){
+                    tmp.add(handTiles[i][j]);
+                }
+            }
+        }
+
+        List<String> customOrder = Arrays.asList("Red", "Orange", "Blue", "Black", "Bugi");
+
+        Comparator<Tile> customComparator = (tile1, tile2) -> {
+            int order1 = customOrder.indexOf(tile1.getColor());
+            int order2 = customOrder.indexOf(tile2.getColor());
+
+            if (order1 != order2) {
+                return Integer.compare(order1, order2);
+            } else {
+                return Integer.compare(tile1.getNumber(), tile2.getNumber());
+            }
+        };
+        Collections.sort(tmp, customComparator);
+
+        int idx = 0;
+        for(int i = 0 ; i < HAND_HEIGHT * HAND_WIDTH ; i ++){
+            if(i < tmp.size()){
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = tmp.get(i);
+            }
+            else{
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = null;
+            }
+        }
+
+        updateHandTiles();
+    }
+
 
     // 클라이언트로 넘어온 쿼리 실행 함수
     public void excuteQuery(SerializeObject object){
@@ -179,13 +359,45 @@ public class GameController {
         switch (object.getObjectType()){
             case "String" :
                 String content = (String)object.getEventObject();
-
+                // 게임 시작
+                if(content.equals("startGame")){
+                    view.changePanel("GamePanel");
+                }
+                else if(content.equals("finishTurn")){
+                    isTurnProgress = false;
+                    if(isServer) server.notifiObservers(new SerializeObject("finishTurn", "String", index), 0);
+                }
+                else if(content.equals("finishGame")){
+                    // 게임 끝 TODO
+                }
                 break;
 
             case "Player[]":
                 Player[] getPlayers = (Player[]) object.getEventObject();
                 changePlayers(getPlayers);
                 System.out.println(playersStr());
+                break;
+
+            // 타일 첫 손패
+            case "Hand":
+                if(object.getIndex() == index) {
+                    handTiles = (Tile[][]) object.getEventObject();
+                    updateHandTiles();
+                }
+                break;
+
+            case "Board":
+                boardTiles = (Board) object.getEventObject();
+                updateBoardTiles();
+                break;
+
+            case "Turn":
+                if((int)object.getEventObject() == index){
+                    startTurn();
+                }
+                else{
+                    // 스레드로 30초 타이머
+                }
                 break;
 
             case "Name":
@@ -196,7 +408,7 @@ public class GameController {
                     players[curIndex].setName(name);
                     view.updatePlayers(players);
                     System.out.println(players + " " + object.getIndex());
-                    server.notifiObservers(new SerializeObject(players, "Player[]", object.getIndex()), 0);
+                    server.notifiObservers(new SerializeObject(Arrays.copyOf(players, MAX_PLAYER_COUNT), "Player[]", object.getIndex()), 0);
                 }
                 break;
 
@@ -207,8 +419,13 @@ public class GameController {
             case "ReadyState" :
                     Player.ReadyState readyState = (Player.ReadyState) object.getEventObject();
                     updateReadyState(object.getIndex(), readyState);
-                    if(isServer) server.notifiObservers(new SerializeObject(readyState, "ReadyState", object.getIndex()), index);
+                    if(isServer) server.notifiObservers(new SerializeObject(readyState, "ReadyState", object.getIndex()), object.getIndex());
                     break;
+
+            case "TileCount" :
+                    int cnt = (int)object.getEventObject();
+                    players[object.getIndex()].setTileCount(cnt);
+                    if(isServer) server.notifiObservers(new SerializeObject(cnt, "TileCount", object.getIndex()), object.getIndex());
             default:
                 break;
         }
