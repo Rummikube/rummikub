@@ -542,6 +542,24 @@ public class GameView {
         startButton.setContentAreaFilled(false);
         startButton.setOpaque(true);
 
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(gameController.getIndex() == 0){
+                    if(gameController.checkReady()){
+                        gameController.changeGamePanel();
+                    }
+                    else{
+                        roomNoticePanel.setText("모든 사람이 준비를 해야 시작할 수 있습니다.");
+                    }
+                }
+                else{
+                    roomNoticePanel.setText("방장이 게임을 시작할 수 있습니다.");
+                }
+            }
+        });
+
+
         panel_19.add(startButton, BorderLayout.CENTER);
 
         JPanel panel_20 = new JPanel();
@@ -578,6 +596,17 @@ public class GameView {
         readyButton.setFocusPainted(false);
         readyButton.setContentAreaFilled(false);
         readyButton.setOpaque(true);
+
+        readyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(gameController.getIndex() != 0){
+                    gameController.changeReadyState();
+                }
+            }
+        });
+
+
 
         panel_20.add(readyButton, BorderLayout.CENTER);
 
@@ -624,6 +653,7 @@ public class GameView {
                 RoomPlayerPanel.setBackground(new Color(0, 144, 81));
 //                RoomPlayerPanel.setBackground(Color.cyan);
                 JPanel tmpPanel = new JPanel();
+                tmpPanel.setBackground(new Color(223,241,239));
                 tmpPanel.setPreferredSize(new Dimension(550, 310));
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
                 roomRowPanel.add(tmpPanel);

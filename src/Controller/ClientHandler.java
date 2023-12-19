@@ -2,65 +2,121 @@ package Controller;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ClientHandler implements Runnable {
+
+public class ClientHandler{
     private Socket clientSocket;
-    private ObjectOutputStream objectOutputStream;
-    private ObjectInputStream objectInputStream;
     private Object input = null;
 
+    private ServerOutput out;
+    private ServerInput in;
     private Server server;
     private int index;
-    private SerializeObject obj = null;
 
 
     // 클라이언트에 객체 전달
-    public void setObject(SerializeObject obj){
-        this.obj = obj;
+    public void sendObject(SerializeObject obj){
+        out.addObject(obj);
     }
 
-    public void update(SerializeObject object){
-        // 현재 오브젝트 파싱 및 처리
-        server.excute(object, index);
-    }
+    public void startThread(){
+        Thread outThread = new Thread(out);
+        Thread inThread = new Thread(in);
 
+        outThread.start();
+        inThread.start();
+    }
 
     public ClientHandler(Socket socket, Server server, int index) {
         this.clientSocket = socket;
         this.server = server;
         this.index = index;
         try {
-            objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+            out = new ServerOutput(clientSocket);
+            in = new ServerInput(clientSocket);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                if(obj != null || (input = objectInputStream.readObject()) != null) {
-                    // 입력
-                    if (obj != null) {
-                        System.out.println("출력 추가됨 " + obj.getEventObject() + " ");
-                        objectOutputStream.writeObject(obj);
-                        obj = null;
-                    } else {
-                        SerializeObject sinput = (SerializeObject) input;
-                        System.out.println("입력 추가됨 " + sinput.getEventObject());
-                        update((SerializeObject) input);
+    class ServerOutput implements Runnable{
+        private ObjectOutputStream objectOutputStream;
+        private Socket serverSocket;
+
+        private Queue<SerializeObject> outputQueue;
+
+        public ServerOutput(Socket serverSocket) throws IOException {
+            this.serverSocket = serverSocket;
+            objectOutputStream = new ObjectOutputStream(serverSocket.getOutputStream());
+            outputQueue = new ConcurrentLinkedQueue<>();
+        }
+
+        public ObjectOutputStream getObjectOutputStream() {
+            return objectOutputStream;
+        }
+
+        public void addObject(SerializeObject object){
+            this.outputQueue.offer(object);
+            System.out.println(object.getEventObject() + " 큐에 추가됨");
+            System.out.println(outputQueue.toString());
+        }
+
+
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    SerializeObject sendObj = outputQueue.poll();
+                    if (sendObj != null) {
+                        System.out.println(sendObj.getEventObject());
+                        objectOutputStream.writeObject(sendObj);
+                        System.out.println("출력 추가됨 " + sendObj.getEventObject() + " index : " + index);
                     }
                 }
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
+            catch (IOException e){
                 e.printStackTrace();
+            }
+            finally{
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    class ServerInput implements Runnable{
+        ObjectInputStream objectInputStream;
+        Socket serverSocket;
+
+        Object curInput = null;
+
+        public ServerInput(Socket serverSocket) throws IOException {
+            this.serverSocket = serverSocket;
+            objectInputStream = new ObjectInputStream(serverSocket.getInputStream());
+        }
+
+        public ObjectInputStream getObjectInputStream() {
+            return objectInputStream;
+        }
+
+        @Override
+        public void run() {
+            while(true){
+                try {
+                    if((curInput = objectInputStream.readObject()) != null){
+                        SerializeObject sInput = (SerializeObject) curInput;
+                        server.getGameController().excuteQuery(sInput);
+                    }
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
