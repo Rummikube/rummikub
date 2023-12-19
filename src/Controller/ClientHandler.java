@@ -1,8 +1,9 @@
 package Controller;
 
+import Model.Player;
+
 import java.io.*;
 import java.net.Socket;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -41,7 +42,7 @@ public class ClientHandler{
             e.printStackTrace();
         }
     }
-
+1
     class ServerOutput implements Runnable{
         private ObjectOutputStream objectOutputStream;
         private Socket serverSocket;
@@ -60,8 +61,6 @@ public class ClientHandler{
 
         public void addObject(SerializeObject object){
             this.outputQueue.offer(object);
-            System.out.println(object.getEventObject() + " 큐에 추가됨");
-            System.out.println(outputQueue.toString());
         }
 
 
@@ -71,8 +70,16 @@ public class ClientHandler{
                 while (true) {
                     SerializeObject sendObj = outputQueue.poll();
                     if (sendObj != null) {
-                        System.out.println(sendObj.getEventObject());
                         objectOutputStream.writeObject(sendObj);
+                        if(sendObj.getObjectType() == "Player[]") {
+                            Player[] cur = (Player[]) sendObj.getEventObject();
+                            for(int i = 0 ; i < 4 ; i ++){
+                                if(cur[i] != null) {
+                                    System.out.println(cur[i].getName());
+                                }
+                            }
+                            System.out.println(sendObj.getEventObject());
+                        }
                         System.out.println("출력 추가됨 " + sendObj.getEventObject() + " index : " + index);
                     }
                 }

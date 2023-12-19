@@ -44,11 +44,9 @@ public class Server {
         ClientHandler curHandler = new ClientHandler(clientSocket, this, idx);
         handlers[idx] = curHandler;
         players[idx] = new Player("");
-        curHandler.sendObject(new SerializeObject("connected", "String", gameController.getIndex()));
         curHandler.sendObject(new SerializeObject(idx, "Index", gameController.getIndex()));
         curHandler.startThread();
         System.out.println("플레이어 추가됨");
-        gameController.updatePlayers();
     }
 
     private void openServer() {

@@ -45,7 +45,7 @@ public class GameController {
                 tmp += "null\n";
             }
             else {
-                tmp += players[i].toString() + "\n";
+                tmp += players[i].toString() + " ";
                 tmp += view.getRoomNameLabel()[i].getText() + "\n";
             }
         }
@@ -55,6 +55,10 @@ public class GameController {
     public GameController(GameView view) {
         this.view = view;
         view.setGameController(this);
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public void start(){
@@ -181,16 +185,18 @@ public class GameController {
             case "Player[]":
                 Player[] getPlayers = (Player[]) object.getEventObject();
                 changePlayers(getPlayers);
+                System.out.println(playersStr());
                 break;
 
             case "Name":
                 if(isServer) {
                     System.out.println(object.getEventObject() + " 플레이어 추가");
                     String name = (String) object.getEventObject();
-                    players[index].setName(name);
-                    view.updateNameLabel(name, index);
-                    System.out.println(playersStr());
-                    server.notifiObservers(new SerializeObject(players, "Player[]", object.getIndex()), -1);
+                    int curIndex = object.getIndex();
+                    players[curIndex].setName(name);
+                    view.updatePlayers(players);
+                    System.out.println(players + " " + object.getIndex());
+                    server.notifiObservers(new SerializeObject(players, "Player[]", object.getIndex()), 0);
                 }
                 break;
 

@@ -40,15 +40,19 @@ public class Client{
                     e.printStackTrace();
                 }
             }
-            System.out.println("받은 객체 : " + answer.getEventObject());
-            String answerStr = (String)answer.getEventObject();
-            if(answerStr.equals("방이 가득찼습니다.")) {
-                throw new NotEmptySpaceException();
+            System.out.println("받은 객체 : " + answer.getEventObject() + answer.getObjectType());
+
+            if(!answer.getObjectType().equals("Index")) {
+                String answerStr = (String) answer.getEventObject();
+                if (answerStr.equals("방이 가득찼습니다.")) {
+                    throw new NotEmptySpaceException();
+                } else if (answerStr.equals("현재 게임이 진행중입니다.")) {
+                    throw new OnProgressException();
+                }
             }
-            else if(answerStr.equals("현재 게임이 진행중입니다.")){
-                throw new OnProgressException();
+            else{
+                gameController.setIndex((int) answer.getEventObject());
             }
-            sendObject(new SerializeObject("received", "String", gameController.getIndex()));
             Thread outputThread = new Thread(output);
             Thread inputThread = new Thread(input);
 
@@ -83,8 +87,6 @@ public class Client{
 
         public void addObject(SerializeObject object){
             this.outputQueue.offer(object);
-            System.out.println(object.getEventObject() + " 큐에 추가됨");
-            System.out.println(outputQueue.toString());
         }
 
 
