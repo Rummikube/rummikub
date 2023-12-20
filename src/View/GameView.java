@@ -7,12 +7,9 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +20,6 @@ import static Controller.GameController.HAND_HEIGHT;
 import static Controller.GameController.HAND_WIDTH;
 
 public class GameView {
-
     private JFrame frame;
     private JTextField nameTF, addressTF;
     private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton, readyButton, startButton;
@@ -38,6 +34,8 @@ public class GameView {
     private JPanel[] roomPlayerPanel = new JPanel[MAX_PLAYER_COUNT];
 
     private GameController gameController;
+
+    private Player [] players;
 
     public void updateRoomReadyPanel(Player.ReadyState readyState, int index){
         if(readyState == Player.ReadyState.READY){
@@ -81,10 +79,11 @@ public class GameView {
     }
 
     public void updatePlayers(Player[] players){
-            for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
             if(players[i] != null){
                 if(i == 0){
                     roomReadyPanel[i].setBackground(Color.cyan);
+                    //JLabel tileCountLabel = new JLabel("Tiles: " + players[i].getTiles());
                 }
                 else updateRoomReadyPanel(players[i].getReadyState(), i);
                 updateNameLabel(players[i].getName(), i);
@@ -266,7 +265,6 @@ public class GameView {
 
         JPanel LoginImagePanel = new JPanel(/*new GridLayout(1,1,5,5)*/);
         LoginImagePanel.add(bugiLogo);
-        //LoginImagePanel.add(bugikubTitle);
         LoginImagePanel.setBackground(new Color(223, 241,239));
         sl_panel.putConstraint(SpringLayout.NORTH, LoginImagePanel, 60, SpringLayout.NORTH, panel);
         sl_panel.putConstraint(SpringLayout.WEST, LoginImagePanel, 300, SpringLayout.WEST, panel);
@@ -330,23 +328,44 @@ public class GameView {
             playerIconBorder.setLayout(new BorderLayout(0, 0));
 
             JPanel playerIconWest = new JPanel();
+            playerIconWest.setBackground(new Color(223, 241, 239));
             playerIconWest.setPreferredSize(new Dimension(50, 10));
             playerIconBorder.add(playerIconWest, BorderLayout.WEST);
 
+            // "player" + (i+1) Label add
             JPanel playerIconSouth = new JPanel();
-            playerIconSouth.setPreferredSize(new Dimension(10, 50));
+            playerIconSouth.setLayout(new BorderLayout());
+            JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            centerPanel.setBackground(new Color(223, 241, 239));
+            centerPanel.add(Box.createRigidArea(new Dimension(40, 0)));
+            JLabel playerName = new JLabel("Player " + (i + 1));
+            JLabel remainTiles = new JLabel("n tiles remain"); // 남아있는 타일 개수 출력
+            JPanel playerNamePanel = new JPanel();
+            playerNamePanel.setBackground(new Color(223, 241, 239));
+            playerNamePanel.add(playerName);
+            playerNamePanel.add(remainTiles);
+            centerPanel.add(playerNamePanel);
+            playerIconSouth.add(centerPanel, BorderLayout.CENTER);
             playerIconBorder.add(playerIconSouth, BorderLayout.SOUTH);
 
+
             JPanel playerIconNorth = new JPanel();
+            playerIconNorth.setBackground(new Color(223, 241, 239));
             playerIconNorth.setPreferredSize(new Dimension(10, 50));
             playerIconBorder.add(playerIconNorth, BorderLayout.NORTH);
 
             JPanel playerIconPanel = new JPanel();
+            playerIconPanel.setBackground(new Color(223, 241, 239));
             playerIconBorder.add(playerIconPanel, BorderLayout.CENTER);
 
             playerIcon[i] = playerIconPanel;
 
-            playerIcon[i].setBackground(Color.black);
+            ImageIcon empProfileIcon=new ImageIcon(new ImageIcon("asset/images/emptyProfile.png").getImage());
+            Image scaledImage = empProfileIcon.getImage().getScaledInstance(150, 120, Image.SCALE_SMOOTH);
+            empProfileIcon = new ImageIcon(scaledImage);
+            JLabel emtPlayerIcon=new JLabel();
+            emtPlayerIcon.setIcon(empProfileIcon);
+            playerIcon[i].add(emtPlayerIcon);
         }
 
 
@@ -359,10 +378,12 @@ public class GameView {
         panel_1.setLayout(new BorderLayout(0, 0));
 
         JPanel westPanel = new JPanel();
+        westPanel.setBackground(new Color(223, 241, 239));
         westPanel.setPreferredSize(new Dimension(150, 1));
         panel_1.add(westPanel, BorderLayout.WEST);
 
         JPanel eastPanel = new JPanel();
+        eastPanel.setBackground(new Color(223, 241, 239));
         eastPanel.setPreferredSize(new Dimension(150, 1));
         panel_1.add(eastPanel, BorderLayout.EAST);
 
@@ -372,10 +393,12 @@ public class GameView {
         HandLayoutPanel.setLayout(new BorderLayout(0, 0));
 
         JPanel HandWestPanel = new JPanel();
+        HandWestPanel.setBackground(new Color(223, 241, 239));
         HandWestPanel.setPreferredSize(new Dimension(20, 1));
         HandLayoutPanel.add(HandWestPanel, BorderLayout.WEST);
 
         JPanel HandEastPanel = new JPanel();
+        HandEastPanel.setBackground(new Color(223, 241, 239));
         HandEastPanel.setPreferredSize(new Dimension(20, 1));
         HandLayoutPanel.add(HandEastPanel, BorderLayout.EAST);
 
@@ -385,6 +408,7 @@ public class GameView {
 
         JPanel panell = new JPanel();
         panell.setPreferredSize(new Dimension(10, 20));
+        panell.setBackground(new Color(223,241, 239));
         panel_1.add(panell, BorderLayout.SOUTH);
 
         JPanel panel_5 = new JPanel();
@@ -392,6 +416,7 @@ public class GameView {
         panel_5.setLayout(new BorderLayout(0, 0));
 
         JPanel panel_6 = new JPanel();
+        panel_6.setBackground(new Color(223,241, 239));
         panel_6.setPreferredSize(new Dimension(1, 20));
         panel_5.add(panel_6, BorderLayout.NORTH);
 
@@ -400,40 +425,57 @@ public class GameView {
         panel_7.setLayout(new BorderLayout(0, 0));
 
         JPanel panel_8 = new JPanel();
+        panel_8.setBackground(new Color(223,241, 239));
+
         panel_8.setPreferredSize(new Dimension(15, 10));
+
         panel_7.add(panel_8, BorderLayout.WEST);
 
         JPanel panel_9 = new JPanel();
+        panel_9.setBackground(new Color(223,241, 239));
+
         panel_9.setPreferredSize(new Dimension(15, 10));
+
         panel_7.add(panel_9, BorderLayout.EAST);
 
         JPanel BoardPanel = new JPanel();
+        BoardPanel.setBackground(new Color(223,241, 239));
+
+
         panel_7.add(BoardPanel, BorderLayout.CENTER);
         BoardPanel.setLayout(new GridLayout(BOARD_HEIGHT, BOARD_WIDTH, 0, 5));
 
         // board 배열에 패널 추가
         for (int i = 0; i < BOARD_HEIGHT; i++) {
             JPanel curRowPanel = new JPanel();
+            curRowPanel.setBackground(new Color(223,241, 239));
             BoardPanel.add(curRowPanel);
             for (int j = 0; j < BOARD_WIDTH; j++) {
                 JPanel tmp = new JPanel();
                 board[i][j] = tmp;
                 curRowPanel.add(tmp);
                 board[i][j].setPreferredSize(new Dimension(50, 75));
-                board[i][j].setBackground(Color.black);
+                board[i][j].setBackground(new Color(223, 241, 239));
             }
         }
+
 
         // hand 배열에 패널 추가
         for (int i = 0; i < HAND_HEIGHT; i++) {
             JPanel curRowPanel = new JPanel();
+            curRowPanel.setBackground(new Color(223, 241, 239));
             HandPanel.add(curRowPanel);
             for (int j = 0; j < HAND_WIDTH; j++) {
                 JPanel tmp = new JPanel();
                 hand[i][j] = tmp;
                 curRowPanel.add(tmp);
                 hand[i][j].setPreferredSize(new Dimension(80, 120));
-                hand[i][j].setBackground(Color.black);
+
+                ImageIcon tile=new ImageIcon(new ImageIcon("asset/images/tile.png").getImage());
+                JLabel tiles=new JLabel();
+                tiles.setIcon(tile);
+                hand[i][j].setBackground(new Color(223, 241, 239));
+                hand[i][j].add(tiles);
             }
         }
 
@@ -444,41 +486,72 @@ public class GameView {
         MenuPanel.setLayout(new BoxLayout(MenuPanel, BoxLayout.Y_AXIS));
 
         JPanel panel_2 = new JPanel();
+        panel_2.setBackground(new Color(223, 241, 239));
         panel_2.setPreferredSize(new Dimension(150, 50));
         MenuPanel.add(panel_2);
         panel_2.setLayout(null);
 
-
         // 종료 버튼
-        QuitButton = new JButton("New button");
+        ImageIcon quitBtnIcon = new ImageIcon(new ImageIcon("asset/images/QuitBTN.png").getImage());
+        QuitButton = new JButton();
+        QuitButton.setIcon(quitBtnIcon);
+        QuitButton.setBackground(new Color(223, 241, 239));
+        QuitButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+        QuitButton.setContentAreaFilled(false);
+        QuitButton.setFocusPainted(false);
+        QuitButton.setOpaque(false);
         QuitButton.setBounds(25, 43, 100, 100);
         panel_2.add(QuitButton);
 
+
         JPanel panel_4 = new JPanel();
+        panel_4.setBackground(new Color(223, 241, 239));
         panel_4.setPreferredSize(new Dimension(100, 200));
         MenuPanel.add(panel_4);
         panel_4.setLayout(null);
 
 
         // Run 정렬 버튼
-        RunSortButton = new JButton("New button");
+        ImageIcon runIcon=new ImageIcon(new ImageIcon("asset/images/RunSortBTN.png").getImage());
+        RunSortButton = new JButton();
+        RunSortButton.setIcon(runIcon);
+        RunSortButton.setBackground(new Color(223, 241, 239));
+        RunSortButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+        RunSortButton.setContentAreaFilled(false);
+        RunSortButton.setFocusPainted(false);
+        RunSortButton.setOpaque(false);
         RunSortButton.setBounds(12, 45, 126, 123);
         panel_4.add(RunSortButton);
 
 
         // Group 정렬 버튼
-        GroupSortButton = new JButton("New button");
-        GroupSortButton.setBounds(12, 178, 126, 107);
+        ImageIcon groupIcon=new ImageIcon(new ImageIcon("asset/images/GroupSortBTN.png").getImage());
+        GroupSortButton = new JButton();
+        GroupSortButton.setIcon(groupIcon);
+        GroupSortButton.setBackground(new Color(223, 241, 239));
+        GroupSortButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+        GroupSortButton.setBounds(12, 178, 126, 113);
+        GroupSortButton.setContentAreaFilled(false);
+        GroupSortButton.setFocusPainted(false);
+        GroupSortButton.setOpaque(false);
         panel_4.add(GroupSortButton);
 
         JPanel panel_10 = new JPanel();
+        panel_10.setBackground(new Color(223, 241, 239));
         panel_10.setPreferredSize(new Dimension(100, 200));
         MenuPanel.add(panel_10);
         panel_10.setLayout(null);
 
         // 타일 드로우 버튼
-        DrawTileButton = new JButton("New button");
+        ImageIcon drawTile=new ImageIcon(new ImageIcon("asset/images/AddTilesBTN.png").getImage());
+        DrawTileButton = new JButton();
+        DrawTileButton.setIcon(drawTile);
+        DrawTileButton.setBackground(new Color(223, 241, 239));
+        DrawTileButton.setBorder(new EmptyBorder(0,0,0,0));
         DrawTileButton.setBounds(12, 10, 126, 316);
+        DrawTileButton.setContentAreaFilled(false);
+        DrawTileButton.setFocusPainted(false);
+        DrawTileButton.setOpaque(false);
         panel_10.add(DrawTileButton);
 
         // 플레이어 방
