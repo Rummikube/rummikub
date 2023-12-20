@@ -20,15 +20,13 @@ import static Controller.GameController.BOARD_WIDTH;
 import static Controller.GameController.HAND_HEIGHT;
 import static Controller.GameController.HAND_WIDTH;
 
-class TileComponent extends JPanel{
+class TileComponent extends JLabel{
     private int row, col;
     private boolean inBoard;
-    Image backgroundImage;
-    public TileComponent(int row, int col, boolean inBoard, String imagePath) {
+    public TileComponent(int row, int col, boolean inBoard) {
         this.row = row;
         this.col = col;
         this.inBoard = inBoard;
-        backgroundImage = new ImageIcon(imagePath).getImage();
     }
 
     public boolean isInBoard() {
@@ -64,13 +62,6 @@ class TileComponent extends JPanel{
                 '}';
     }
 
-    @Override
-    protected void paintComponent(Graphics g){
-        super.paintComponent(g);
-        // 이미지를 패널에 그리기
-        g.drawImage(backgroundImage, 0, 0, this);
-    }
-
 }
 
 
@@ -82,7 +73,8 @@ public class GameView {
     private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton, readyButton, startButton;
     private JLabel loginErrorLabel, roomNoticePanel;
 
-    private JPanel curClickedPanel;
+    static ImageIcon tileIcon = new ImageIcon(new ImageIcon("asset/images/tile.png").getImage());
+    private TileComponent curClickedPanel;
     private boolean isDragging = false;
     private Point originalPoint;
 
@@ -151,7 +143,7 @@ public class GameView {
     }
 
     public void setTransParentPanel(int row, int col, boolean isHand){
-        JPanel[][] curPanel;
+        JLabel[][] curPanel;
         if(isHand){
             curPanel = hand;
         }
@@ -559,11 +551,13 @@ public class GameView {
         for (int i = 0; i < BOARD_HEIGHT; i++) {
             int boardX = 45;
             for (int j = 0; j < BOARD_WIDTH; j++) {
-                TileComponent tmp = new TileComponent(i, j, true, "asset/images/tile.png");
+                TileComponent tmp = new TileComponent(i, j, true);
                 board[i][j] = tmp;
                 BoardPanel.add(tmp);
+                tmp.setIcon(tileIcon);
                 Rectangle tPoint = new Rectangle(boardX, boardY, 50, 75);
                 board[i][j].setBounds(tPoint);
+
                 boardPoints[i][j] = tPoint;
                 board[i][j].setBackground(Color.black);
                 boardX += 55;
@@ -610,7 +604,7 @@ public class GameView {
         for (int i = 0; i < HAND_HEIGHT; i++) {
             int handX = 170;
             for (int j = 0; j < HAND_WIDTH; j++) {
-                TileComponent tmp = new TileComponent(i, j, false, "asset/images/tile.png");
+                TileComponent tmp = new TileComponent(i, j, false);
                 hand[i][j] = tmp;
                 BoardPanel.add(tmp);
                 hand[i][j].setBackground(Color.yellow);
@@ -619,6 +613,7 @@ public class GameView {
                 hand[i][j].setBounds(tPoint);
                 handPoints[i][j] = tPoint;
                 JLabel tmpLabel=new JLabel("");
+                tmp.setIcon(tileIcon);
                 tileNumberLabel[i][j] = tmpLabel;
                 tmpLabel.setForeground(Color.cyan);
                 tmpLabel.setFont(tileNumFont);
