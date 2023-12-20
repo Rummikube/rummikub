@@ -7,6 +7,8 @@ import View.GameView;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.*;
 
 import java.net.UnknownHostException;
@@ -36,11 +38,15 @@ public class GameController {
     public static final int HAND_HEIGHT = 2;
     public static final int HAND_WIDTH = 10;
 
+    private Game game;
+
     public static GameState gameState = GameState.FINISHED;
 
     public Player curPlayer;
 
     public Tile[][] handTiles;
+    public Tile[][] lastBoardTiles;
+    public Tile[][] lastHandTiles;
 
     public Board boardTiles;
     private boolean isTurnProgress = false;
@@ -107,19 +113,21 @@ public class GameController {
 
     // 방 만드는 함수 - 서버
     public void makeRoom() {
-        view.changePanel("GamePanel");
-//        players[0].setReadyState(Player.ReadyState.READY);
-//        players[0] = new Player(view.getNameTF().getText());
-//        index = 0;
-//        view.updatePlayers(players);
-//        server = new Server(PORT, this);
-//        isServer = true;
-//        // 뷰에서 화면 전환함수
-//        view.changePanel("RoomPanel");
+//        view.changePanel("GamePanel");
+        players[0] = new Player(view.getNameTF().getText());
+        players[0].setReadyState(Player.ReadyState.READY);
+        index = 0;
+        view.updatePlayers(players);
+        server = new Server(PORT, this);
+        isServer = true;
+        // 뷰에서 화면 전환함수
+        view.changePanel("RoomPanel");
     }
 
 
     public void changeTiles(boolean startInBoard, boolean endInBoard, int sr, int sc, int er, int ec){
+        System.out.println("타일 변경 저장" + startInBoard + " " + endInBoard);
+
         Tile start = startInBoard ? boardTiles.getTile(sr, sc) : handTiles[sr][sc];
         Tile end = endInBoard ? boardTiles.getTile(er, ec) : handTiles[er][ec];
 
@@ -129,7 +137,6 @@ public class GameController {
                 boardTiles.setTile(er, ec, start);
             }
             else{
-                System.out.println("에러 발생");
                 handTiles[er][ec] = start;
             }
         }
@@ -141,6 +148,19 @@ public class GameController {
             else{
                 handTiles[er][ec] = start;
             }
+        }
+
+        for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
+            for(int j = 0 ; j < BOARD_WIDTH ; j ++){
+                System.out.print(boardTiles.getTile(i, j) == null ? null : boardTiles.getTile(i ,j).toString());
+            }
+            System.out.println();
+        }
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                System.out.print(handTiles[i][j] == null ? null : handTiles[i][j].toString());
+            }
+            System.out.println();
         }
     }
 
@@ -187,10 +207,6 @@ public class GameController {
     }
 
 
-    // 서버로 플레이어 추가시 서버 뷰 추가
-    public void updatePlayers(){
-        view.updatePlayers(players);
-    }
 
     // 플레이어 정보 변경 함수
     public void changePlayers(Player[] getPlayers){
@@ -215,15 +231,14 @@ public class GameController {
     public void serverStartGame(){
         gameState = GameState.IN_PROGRESS;
         // 게임 관리 객체 생성
-        Game game = new Game(players);
+        game = new Game(players);
         // 게임 타일 객체 생성
 
         int playerCnt = game.getPlayerCount();
         // 플레이어들에게 첫 손패 타일 전달
         distributeTiles(game.getTileDeck());
-        updateHandTiles();
-        boardTiles = game.getBoard();
-        updateBoardTiles();
+        updateHandTiles(handTiles);
+        boardTiles = new Board();
         server.notifiObservers(new SerializeObject(boardTiles, "Board", 0), 0);
 
 
@@ -252,11 +267,43 @@ public class GameController {
 
     public void startTurn(){
         isMyTurn = true;
-        Tile[][] lastBoard = boardTiles.getLastBoardState();
-
+        lastBoardTiles = boardTiles.getLastBoardState();
+        lastHandTiles = getLastHandTiles();
     }
 
+    // 턴 종료 버튼 클릭
+    public void clickFinishTurn(){
+        // 수가 줄었는지 체크해야함
+        if(isInMyTurn()) {
+            System.out.println(boardTiles.validateCombination() + " ########## ");
+            if (boardTiles.validateCombination()) {
+                isMyTurn = false;
+                if (isServer) {
+                    excuteQuery(new SerializeObject(boardTiles, "Board", index));
+                    excuteQuery(new SerializeObject("finishTurn", "String", index));
+                } else {
+                    client.sendObject(new SerializeObject(boardTiles, "Board", index));
+                    client.sendObject(new SerializeObject("finishTurn", "String", index));
+                }
 
+            } else {
+                boardTiles.setTiles(lastBoardTiles);
+                updateBoardTiles(boardTiles.getTiles());
+                handTiles = lastHandTiles;
+                updateHandTiles(handTiles);
+            }
+        }
+    }
+
+    public Tile[][] getLastHandTiles(){
+        Tile[][] tmpTiles = new Tile[HAND_HEIGHT][HAND_WIDTH];
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                tmpTiles[i][j] = handTiles[i][j];
+            }
+        }
+        return tmpTiles;
+    }
 
     public void manageGameProcess(Game game){
         while(true){
@@ -268,6 +315,10 @@ public class GameController {
 
             while(isTurnProgress){
             }
+            System.out.println("턴이 종료되었습니다.");
+
+            game.getNextTurnPlayerIndex();
+
 
             if(canFinish(game.getTileDeck())) break;
         }
@@ -298,23 +349,23 @@ public class GameController {
 
 
     // 핸드 UI 적용
-    public void updateHandTiles(){
+    public void updateHandTiles(Tile[][] handTiles){
         System.out.println("타일 UI 업데이트");
         for(int i = 0 ; i < HAND_HEIGHT ; i ++){
             for(int j = 0 ; j < HAND_WIDTH ; j ++){
                 Tile cur = handTiles[i][j];
                 if(cur == null) {
                     view.setTransParentPanel(i, j, true);
+
                     continue;
                 }
-                view.updateTile(cur.getColor(), cur.getNumber(), i, j);
+                view.updateTile(cur.getColor(), cur.getNumber(), i, j, false);
             }
         }
     }
 
     // 보드 UI 적용
-    public void updateBoardTiles(){
-        Tile[][] tiles = boardTiles.getTiles();
+    public void updateBoardTiles(Tile[][] tiles){
         System.out.println("보드 UI 업데이트");
         for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
             for(int j = 0 ; j < BOARD_WIDTH ; j ++){
@@ -323,7 +374,7 @@ public class GameController {
                     view.setTransParentPanel(i, j, false);
                     continue;
                 }
-                view.updateTile(cur.getColor(), cur.getNumber(), i, j);
+                view.updateTile(cur.getColor(), cur.getNumber(), i, j, true);
             }
         }
     }
@@ -333,7 +384,8 @@ public class GameController {
         for(int i = 0 ; i < HAND_HEIGHT ; i ++){
             for(int j = 0 ; j < HAND_WIDTH ; j ++){
                 if(handTiles[i][j] != null){
-                    tmp.add(handTiles[i][j]);
+                    Tile cop = new Tile(handTiles[i][j].getNumber(), handTiles[i][j].getColor());
+                    tmp.add(cop);
                 }
             }
         }
@@ -349,7 +401,7 @@ public class GameController {
             }
         }
 
-        updateHandTiles();
+        updateHandTiles(handTiles);
     }
 
     public void sortByGroup(){
@@ -357,7 +409,9 @@ public class GameController {
         for(int i = 0 ; i < HAND_HEIGHT ; i ++){
             for(int j = 0 ; j < HAND_WIDTH ; j ++){
                 if(handTiles[i][j] != null){
-                    tmp.add(handTiles[i][j]);
+                    System.out.println(handTiles[i][j].toString());
+                    Tile cop = new Tile(handTiles[i][j].getNumber(), handTiles[i][j].getColor());
+                    tmp.add(cop);
                 }
             }
         }
@@ -376,9 +430,12 @@ public class GameController {
         };
         Collections.sort(tmp, customComparator);
 
+
+        System.out.println("변경 후");
         int idx = 0;
         for(int i = 0 ; i < HAND_HEIGHT * HAND_WIDTH ; i ++){
             if(i < tmp.size()){
+                System.out.println(tmp.get(i).toString());
                 handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = tmp.get(i);
             }
             else{
@@ -386,9 +443,48 @@ public class GameController {
             }
         }
 
-        updateHandTiles();
+        updateHandTiles(handTiles);
     }
 
+
+    public void drawTile(){
+        if(isInMyTurn()){
+            isMyTurn = false;
+
+            //이전 보드 상태로 돌려놓기
+            boardTiles.setTiles(lastBoardTiles);
+            updateBoardTiles(boardTiles.getTiles());
+            handTiles = lastHandTiles;
+            updateHandTiles(handTiles);
+
+            if(!isServer){
+                // 턴이 끝났음을 서버에 알림
+                client.sendObject(new SerializeObject("finishTurn", "String", index));
+                client.sendObject(new SerializeObject("drawTile", "String", index));
+
+
+            }
+            else{
+                server.notifiObservers(new SerializeObject("finishTurn", "String", index), index);
+                Tile tile = game.getTileDeck().draw();
+                addTile(tile);
+                isTurnProgress = false;
+            }
+        }
+    }
+
+    public void addTile(Tile tile){
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++) {
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                if(handTiles[i][j] == null){
+                    handTiles[i][j] = tile;
+                    view.updateTile(tile.getColor(), tile.getNumber(), i, j, false);
+
+                    return;
+                }
+            }
+        }
+    }
 
     // 클라이언트로 넘어온 쿼리 실행 함수
     public void excuteQuery(SerializeObject object){
@@ -398,6 +494,14 @@ public class GameController {
                 String content = (String)object.getEventObject();
                 // 게임 시작
                 if(content.equals("startGame")){
+                    for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+                        if(players[i] == null){
+                            view.updateGamePlayerIcon(i, null, true);
+                        }
+                        else{
+                            view.updateGamePlayerIcon(i, players[i].getName(), false);
+                        }
+                    }
                     view.changePanel("GamePanel");
                 }
                 else if(content.equals("finishTurn")){
@@ -419,21 +523,25 @@ public class GameController {
             case "Hand":
                 if(object.getIndex() == index) {
                     handTiles = (Tile[][]) object.getEventObject();
-                    updateHandTiles();
+                    updateHandTiles(handTiles);
                 }
                 break;
 
             case "Board":
                 boardTiles = (Board) object.getEventObject();
-                updateBoardTiles();
+                updateBoardTiles(boardTiles.getTiles());
+                if(isServer) server.notifiObservers(new SerializeObject(boardTiles ,"Board", index), object.getIndex());
                 break;
+
 
             case "Turn":
                 if((int)object.getEventObject() == index){
+                    System.out.println("나의 턴입니다.");
                     startTurn();
                 }
                 else{
-                    // 스레드로 30초 타이머
+                    isTurnProgress = true;
+                    System.out.println("다른 플레이어의 턴입니다." + (int)object.getEventObject());
                 }
                 break;
 
@@ -453,6 +561,18 @@ public class GameController {
                 this.index = (int) object.getEventObject();
                 break;
 
+            case "drawTile":
+                if(isServer){
+                    server.notifiObservers(new SerializeObject(game.getTileDeck().draw(), "getTile", index), 0);
+                }
+                break;
+
+            case "getTile":
+                if(object.getIndex() == index){
+                    Tile getTile = (Tile) object.getEventObject();
+                    addTile(getTile);
+                }
+                break;
             case "ReadyState" :
                     Player.ReadyState readyState = (Player.ReadyState) object.getEventObject();
                     updateReadyState(object.getIndex(), readyState);

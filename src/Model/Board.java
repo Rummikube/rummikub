@@ -20,6 +20,10 @@ public class Board implements Serializable {
         return tiles;
     }
 
+    public void setTiles(Tile[][] tiles) {
+        this.tiles = tiles;
+    }
+
     public Tile getTile(int row, int col){
         return tiles[row][col];
     }

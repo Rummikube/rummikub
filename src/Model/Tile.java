@@ -34,14 +34,14 @@ public class Tile implements Serializable {
     }
 
     // 타일 정보를 문자열로 반환하는 메서드
-    @Override
-    public String toString() {
-        if(isBugi()) return "Model.Tile{ BUGI }";
-        else {
-            return "Model.Tile{" +
-                    "number=" + number +
-                    ", color='" + color + '\'' +
-                    "}";
-        }
-    }
+//    @Override
+//    public String toString() {
+//        if(isBugi()) return "Model.Tile{ BUGI }";
+//        else {
+//            return "Model.Tile{" +
+//                    "number=" + number +
+//                    ", color='" + color + '\'' +
+//                    "}";
+//        }
+//    }
 }

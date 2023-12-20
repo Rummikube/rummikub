@@ -105,22 +105,12 @@ public class Game {
 //            }
 //
 //
-//            // 다음 턴으로 변경
-//            int curIdx = currentPlayerIndex + 1;
 //
-//            while(true){
-//                if(curIdx > GameController.MAX_PLAYER_COUNT) curIdx %= GameController.MAX_PLAYER_COUNT;
-//                if(players[curIdx] != null){
-//                    currentPlayerIndex = curIdx;
-//                    break;
-//                }
-//                curIdx ++;
-//            }
 //
 //        }
 //    }
 
-    private void getNextTurnPlayerIndex(){
+    public void getNextTurnPlayerIndex(){
         int curIdx = currentPlayerIndex + 1;
 
             while(true){

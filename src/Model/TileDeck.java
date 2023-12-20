@@ -56,7 +56,7 @@ public class TileDeck {
     }
 
     // Deck에서 하나의 타일을 뽑는 함수
-    private Tile draw(){
+    public Tile draw(){
         if(this.isEmpty()) return null;
         Tile tmp = tiles.get(0);
         tiles.remove(0);

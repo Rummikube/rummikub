@@ -11,7 +11,6 @@ public class LayeredPaneUtils {
         System.out.println(p);
         for (int i = 0; i < layeredPane.getComponentCount(); i++) {
             Component comp = layeredPane.getComponent(i);
-            System.out.println(comp.getBounds());
             if (comp.getBounds().contains(p)) {
                 components.add(comp);
             }
