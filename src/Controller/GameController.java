@@ -2,10 +2,15 @@ package Controller;
 
 import Exceptions.NotEmptySpaceException;
 import Exceptions.OnProgressException;
-import Model.Player;
+import Model.*;
 import View.GameView;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+
 import java.net.UnknownHostException;
+import java.util.List;
 
 // 서버 플레이어가 게임 진행을 관리
 public class GameController {
@@ -15,6 +20,8 @@ public class GameController {
     }
 
     private GameView view;
+
+    private int index = -1;
 
     public static final int PORT = 12345; // 포트 번호
 
@@ -33,8 +40,18 @@ public class GameController {
 
     public Player curPlayer;
 
+    public Tile[][] handTiles;
+
+    public Board boardTiles;
+    private boolean isTurnProgress = false;
+    private boolean isMyTurn = false;
 
     private Player[] players = new Player[MAX_PLAYER_COUNT];
+
+
+    public boolean canAdd(int row, int col){
+        return boardTiles.canAddTile(row, col);
+    }
 
     public String playersStr() {
         String tmp = "";
@@ -43,16 +60,24 @@ public class GameController {
                 tmp += "null\n";
             }
             else {
-                tmp += players[i].toString() + "\n";
+                tmp += players[i].toString() + " ";
                 tmp += view.getRoomNameLabel()[i].getText() + "\n";
             }
         }
         return tmp;
     }
 
+    public boolean isInMyTurn(){
+        return isMyTurn;
+    }
+
     public GameController(GameView view) {
         this.view = view;
         view.setGameController(this);
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public void start(){
@@ -63,6 +88,10 @@ public class GameController {
         return curPlayer;
     }
 
+
+    public int getIndex(){
+        return index;
+    }
 
     public static GameState getGameState() {
         return gameState;
@@ -76,21 +105,44 @@ public class GameController {
         return players;
     }
 
-    protected void setPlayers(Player[] players) {
-        this.players = players;
-    }
-
     // 방 만드는 함수 - 서버
     public void makeRoom() {
-        players[0] = new Player(view.getNameTF().getText());
-        players[0].setReadyState(Player.ReadyState.READY);
-        view.updatePlayers(players);
-        server = new Server(PORT, this);
-        isServer = true;
-        // 뷰에서 화면 전환함수
-        view.changePanel("RoomPanel");
+        view.changePanel("GamePanel");
+//        players[0].setReadyState(Player.ReadyState.READY);
+//        players[0] = new Player(view.getNameTF().getText());
+//        index = 0;
+//        view.updatePlayers(players);
+//        server = new Server(PORT, this);
+//        isServer = true;
+//        // 뷰에서 화면 전환함수
+//        view.changePanel("RoomPanel");
     }
 
+
+    public void changeTiles(boolean startInBoard, boolean endInBoard, int sr, int sc, int er, int ec){
+        Tile start = startInBoard ? boardTiles.getTile(sr, sc) : handTiles[sr][sc];
+        Tile end = endInBoard ? boardTiles.getTile(er, ec) : handTiles[er][ec];
+
+        if(startInBoard) {
+            boardTiles.setTile(sr, sc, end);
+            if(endInBoard){
+                boardTiles.setTile(er, ec, start);
+            }
+            else{
+                System.out.println("에러 발생");
+                handTiles[er][ec] = start;
+            }
+        }
+        else{
+            handTiles[sr][sc] = end;
+            if(endInBoard){
+                boardTiles.setTile(er, ec, start);
+            }
+            else{
+                handTiles[er][ec] = start;
+            }
+        }
+    }
 
     public void connectRoom(String address) {
         view.getLoginErrorLabel().setText("연결 중 입니다...");
@@ -98,19 +150,20 @@ public class GameController {
         String name = view.getNameTF().getText();
         try {
             client = new Client(this, address, PORT, name);
+            view.changePanel("RoomPanel");
         } catch (UnknownHostException e) {
             view.getLoginErrorLabel().setText("IP주소로 접속할 수 없습니다. IP주소를 다시 확인해주세요.");
         } catch (NotEmptySpaceException e){
-            view.getLoginErrorLabel().setText("현재 방이 가득 차 참가할 수 없습니다.");
+            view.getLoginErrorLabel().setText("현재 방 인원이 가득 차 참가할 수 없습니다.");
         } catch (OnProgressException e){
             view.getLoginErrorLabel().setText("현재 게임이 진행 중인 방입니다.");
         }
-        view.changePanel("RoomPanel");
+
     }
 
 
     // 플레이어 ready 상태 변경 함수
-    public void changeReadyState(int index, Player.ReadyState readyState){
+    public void updateReadyState(int index, Player.ReadyState readyState){
         // ready
         if(readyState == Player.ReadyState.READY && players[index].getReadyState() == Player.ReadyState.NOT_READY){
             players[index].setReadyState(Player.ReadyState.READY);
@@ -121,6 +174,18 @@ public class GameController {
         }
         view.updateRoomReadyPanel(players[index].getReadyState(), index);
     }
+
+    public void changeReadyState(){
+        players[index].setReadyState(players[index].getReadyState() == Player.ReadyState.READY ? Player.ReadyState.NOT_READY : Player.ReadyState.READY);
+        view.updateRoomReadyPanel(players[index].getReadyState(), index);
+        if(isServer){
+            server.notifiObservers(new SerializeObject(players[index].getReadyState(), "ReadyState", index), index);
+        }
+        else{
+            client.sendObject(new SerializeObject(players[index].getReadyState(), "ReadyState", index));
+        }
+    }
+
 
     // 서버로 플레이어 추가시 서버 뷰 추가
     public void updatePlayers(){
@@ -136,39 +201,268 @@ public class GameController {
         view.updatePlayers(players);
     }
 
+    // 모든 플레이어가 Ready 상태인지 체크
+    public boolean checkReady(){
+        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null && players[i].getReadyState() == Player.ReadyState.NOT_READY){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // 메인 게임 함수
+    public void serverStartGame(){
+        gameState = GameState.IN_PROGRESS;
+        // 게임 관리 객체 생성
+        Game game = new Game(players);
+        // 게임 타일 객체 생성
+
+        int playerCnt = game.getPlayerCount();
+        // 플레이어들에게 첫 손패 타일 전달
+        distributeTiles(game.getTileDeck());
+        updateHandTiles();
+        boardTiles = game.getBoard();
+        updateBoardTiles();
+        server.notifiObservers(new SerializeObject(boardTiles, "Board", 0), 0);
+
+
+        // 클라이언트들에게 게임 시작을 알림
+        server.notifiObservers(new SerializeObject("startGame", "String", 0), 0);
+
+        System.out.println("게임 패널 변경");
+        view.changePanel("GamePanel");
+
+
+
+        manageGameProcess(game);
+
+        for(int i = 1 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null){
+                players[i].setReadyState(Player.ReadyState.NOT_READY);
+            }
+        }
+
+        server.notifiObservers(new SerializeObject(players, "Player[]", 0), 0);
+
+        server.notifiObservers(new SerializeObject("finishGame", "String", 0), 0);
+        view.updatePlayers(players);
+        view.changePanel("RoomPanel");
+    }
+
+    public void startTurn(){
+        isMyTurn = true;
+        Tile[][] lastBoard = boardTiles.getLastBoardState();
+
+    }
+
+
+
+    public void manageGameProcess(Game game){
+        while(true){
+            isTurnProgress = true;
+            server.notifiObservers(new SerializeObject(game.getCurrentPlayerIndex(), "Turn", 0), 0);
+            if(game.getCurrentPlayerIndex() == 0){
+                startTurn();
+            }
+
+            while(isTurnProgress){
+            }
+
+            if(canFinish(game.getTileDeck())) break;
+        }
+    }
+
+    public boolean canFinish(TileDeck tileDeck){
+        if(tileDeck.isEmpty()) return true;
+        for(int i = 0 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null && players[i].getTileCount() == 0) return true;
+        }
+        return false;
+    }
+
+    public void distributeTiles(TileDeck tileDeck){
+        handTiles = tileDeck.getFirstHandTiles(HAND_HEIGHT, HAND_WIDTH);
+        for(int i = 1 ; i < MAX_PLAYER_COUNT ; i ++){
+            if(players[i] != null){
+                server.notifiObservers(new SerializeObject(tileDeck.getFirstHandTiles(HAND_HEIGHT, HAND_WIDTH), "Hand", i), 0);
+                server.notifiObservers(new SerializeObject(TileDeck.TILES_PER_PLAYER, "TileCount", i), 0);
+                players[i].setTileCount(TileDeck.TILES_PER_PLAYER);
+            }
+        }
+    }
+
+    public void clientStartGame(){
+
+    }
+
+
+    // 핸드 UI 적용
+    public void updateHandTiles(){
+        System.out.println("타일 UI 업데이트");
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                Tile cur = handTiles[i][j];
+                if(cur == null) {
+                    view.setTransParentPanel(i, j, true);
+                    continue;
+                }
+                view.updateTile(cur.getColor(), cur.getNumber(), i, j);
+            }
+        }
+    }
+
+    // 보드 UI 적용
+    public void updateBoardTiles(){
+        Tile[][] tiles = boardTiles.getTiles();
+        System.out.println("보드 UI 업데이트");
+        for(int i = 0 ; i < BOARD_HEIGHT ; i ++){
+            for(int j = 0 ; j < BOARD_WIDTH ; j ++){
+                Tile cur = tiles[i][j];
+                if(cur == null){
+                    view.setTransParentPanel(i, j, false);
+                    continue;
+                }
+                view.updateTile(cur.getColor(), cur.getNumber(), i, j);
+            }
+        }
+    }
+
+    public void sortByRun(){
+        ArrayList<Tile> tmp = new ArrayList<>();
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                if(handTiles[i][j] != null){
+                    tmp.add(handTiles[i][j]);
+                }
+            }
+        }
+
+        Collections.sort(tmp, (tile1, tile2) -> Integer.compare(tile1.getNumber(), tile2.getNumber()));
+        int idx = 0;
+        for(int i = 0 ; i < HAND_HEIGHT * HAND_WIDTH ; i ++){
+            if(i < tmp.size()){
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = tmp.get(i);
+            }
+            else{
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = null;
+            }
+        }
+
+        updateHandTiles();
+    }
+
+    public void sortByGroup(){
+        ArrayList<Tile> tmp = new ArrayList<>();
+        for(int i = 0 ; i < HAND_HEIGHT ; i ++){
+            for(int j = 0 ; j < HAND_WIDTH ; j ++){
+                if(handTiles[i][j] != null){
+                    tmp.add(handTiles[i][j]);
+                }
+            }
+        }
+
+        List<String> customOrder = Arrays.asList("Red", "Orange", "Blue", "Black", "Bugi");
+
+        Comparator<Tile> customComparator = (tile1, tile2) -> {
+            int order1 = customOrder.indexOf(tile1.getColor());
+            int order2 = customOrder.indexOf(tile2.getColor());
+
+            if (order1 != order2) {
+                return Integer.compare(order1, order2);
+            } else {
+                return Integer.compare(tile1.getNumber(), tile2.getNumber());
+            }
+        };
+        Collections.sort(tmp, customComparator);
+
+        int idx = 0;
+        for(int i = 0 ; i < HAND_HEIGHT * HAND_WIDTH ; i ++){
+            if(i < tmp.size()){
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = tmp.get(i);
+            }
+            else{
+                handTiles[i / HAND_WIDTH][i % HAND_WIDTH] = null;
+            }
+        }
+
+        updateHandTiles();
+    }
+
 
     // 클라이언트로 넘어온 쿼리 실행 함수
-    public void excuteQuery(SerializeObject object, int index){
+    public void excuteQuery(SerializeObject object){
         System.out.println("받은 객체 : " + object.getEventObject());
         switch (object.getObjectType()){
             case "String" :
                 String content = (String)object.getEventObject();
-
+                // 게임 시작
+                if(content.equals("startGame")){
+                    view.changePanel("GamePanel");
+                }
+                else if(content.equals("finishTurn")){
+                    isTurnProgress = false;
+                    if(isServer) server.notifiObservers(new SerializeObject("finishTurn", "String", index), 0);
+                }
+                else if(content.equals("finishGame")){
+                    // 게임 끝 TODO
+                }
                 break;
 
             case "Player[]":
                 Player[] getPlayers = (Player[]) object.getEventObject();
                 changePlayers(getPlayers);
+                System.out.println(playersStr());
+                break;
+
+            // 타일 첫 손패
+            case "Hand":
+                if(object.getIndex() == index) {
+                    handTiles = (Tile[][]) object.getEventObject();
+                    updateHandTiles();
+                }
+                break;
+
+            case "Board":
+                boardTiles = (Board) object.getEventObject();
+                updateBoardTiles();
+                break;
+
+            case "Turn":
+                if((int)object.getEventObject() == index){
+                    startTurn();
+                }
+                else{
+                    // 스레드로 30초 타이머
+                }
                 break;
 
             case "Name":
                 if(isServer) {
                     System.out.println(object.getEventObject() + " 플레이어 추가");
                     String name = (String) object.getEventObject();
-                    players[index].setName(name);
-                    view.updateNameLabel(name, index);
-                    System.out.println(playersStr());
-                    server.notifiObservers(new SerializeObject(players, "Player[]"));
+                    int curIndex = object.getIndex();
+                    players[curIndex].setName(name);
+                    view.updatePlayers(players);
+                    System.out.println(players + " " + object.getIndex());
+                    server.notifiObservers(new SerializeObject(Arrays.copyOf(players, MAX_PLAYER_COUNT), "Player[]", object.getIndex()), 0);
                 }
                 break;
 
+            case "Index" :
+                this.index = (int) object.getEventObject();
+                break;
+
             case "ReadyState" :
-                if(isServer) {
                     Player.ReadyState readyState = (Player.ReadyState) object.getEventObject();
-                    changeReadyState(index, readyState);
-                    server.notifiObservers(new SerializeObject(players, "Player[]"));
+                    updateReadyState(object.getIndex(), readyState);
+                    if(isServer) server.notifiObservers(new SerializeObject(readyState, "ReadyState", object.getIndex()), object.getIndex());
                     break;
-                }
+
+            case "TileCount" :
+                    int cnt = (int)object.getEventObject();
+                    players[object.getIndex()].setTileCount(cnt);
+                    if(isServer) server.notifiObservers(new SerializeObject(cnt, "TileCount", object.getIndex()), object.getIndex());
             default:
                 break;
         }

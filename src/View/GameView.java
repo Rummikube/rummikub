@@ -1,15 +1,16 @@
 package View;
 
 import Controller.GameController;
+import Model.Board;
 import Model.Player;
+import Model.Tile;
 
 import java.awt.*;
-
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,20 +20,89 @@ import static Controller.GameController.BOARD_WIDTH;
 import static Controller.GameController.HAND_HEIGHT;
 import static Controller.GameController.HAND_WIDTH;
 
+class TileComponent extends JPanel{
+    private int row, col;
+    private boolean inBoard;
+    Image backgroundImage;
+    public TileComponent(int row, int col, boolean inBoard, String imagePath) {
+        this.row = row;
+        this.col = col;
+        this.inBoard = inBoard;
+        backgroundImage = new ImageIcon(imagePath).getImage();
+    }
+
+    public boolean isInBoard() {
+        return inBoard;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
+    }
+
+    public void setInBoard(boolean inBoard) {
+        this.inBoard = inBoard;
+    }
+
+    @Override
+    public String toString() {
+        return "TileComponent{" +
+                "row=" + row +
+                ", col=" + col +
+                ", inBoard=" + inBoard +
+                '}';
+    }
+
+    @Override
+    protected void paintComponent(Graphics g){
+        super.paintComponent(g);
+        // 이미지를 패널에 그리기
+        g.drawImage(backgroundImage, 0, 0, this);
+    }
+
+}
+
+
+
+
 public class GameView {
     private JFrame frame;
     private JTextField nameTF, addressTF;
     private JButton makeRoomButton, connectButton, QuitButton, RunSortButton, GroupSortButton, DrawTileButton, readyButton, startButton;
     private JLabel loginErrorLabel, roomNoticePanel;
-    private JPanel[][] board = new JPanel[BOARD_HEIGHT][BOARD_WIDTH]; // 보드의 타일들
 
-    private JPanel[][] hand = new JPanel[HAND_HEIGHT][HAND_WIDTH];
+    private JPanel curClickedPanel;
+    private boolean isDragging = false;
+    private Point originalPoint;
+
+    int offsetX = 0;
+    int offsetY = 0;
+
+
+    private TileComponent[][] board = new TileComponent[BOARD_HEIGHT][BOARD_WIDTH]; // 보드의 타일들
+
+    private TileComponent[][] hand = new TileComponent[HAND_HEIGHT][HAND_WIDTH];
     private JPanel[] playerIcon = new JPanel[MAX_PLAYER_COUNT];
     private JPanel[] roomReadyPanel = new JPanel[MAX_PLAYER_COUNT];
     private JLabel[] roomNameLabel = new JLabel[MAX_PLAYER_COUNT];
 
+    private JLabel[][] tileNumberLabel = new JLabel[HAND_HEIGHT][HAND_WIDTH];
     private JPanel[] roomPlayerPanel = new JPanel[MAX_PLAYER_COUNT];
 
+
+    private Rectangle[][] handPoints = new Rectangle[HAND_HEIGHT][HAND_WIDTH];
+    private Rectangle[][] boardPoints = new Rectangle[BOARD_HEIGHT][BOARD_WIDTH];
     private GameController gameController;
 
     private Player [] players;
@@ -44,6 +114,51 @@ public class GameView {
         else{
             roomReadyPanel[index].setBackground(Color.red);
         }
+    }
+
+    public void updateTile(String color, int num, int row, int col){
+        Color fontColor;
+        JLabel curLabel = tileNumberLabel[row][col];
+        if(color.equals("Red")){
+            fontColor = Color.red;
+        }
+        else if(color.equals("Orange")){
+            fontColor = Color.orange;
+        }
+        else if(color.equals("Blue")){
+            fontColor = Color.blue;
+        }
+        else if(color.equals("Black")){
+            fontColor = Color.BLACK;
+        }
+        else{
+            //TODO 부기 이미지로 변경
+            curLabel.setForeground(Color.cyan);
+            curLabel.setText("14");
+            return;
+        }
+        curLabel.setForeground(fontColor);
+        curLabel.setText(String.valueOf(num));
+    }
+
+    public void setInvisibleTile(int row, int col, boolean isHand){
+        if(isHand){
+            hand[row][col].setVisible(false);
+        }
+        else{
+            board[row][col].setVisible(false);
+        }
+    }
+
+    public void setTransParentPanel(int row, int col, boolean isHand){
+        JPanel[][] curPanel;
+        if(isHand){
+            curPanel = hand;
+        }
+        else{
+            curPanel = board;
+        }
+        curPanel[row][col].setOpaque(false);
     }
 
     public void updateRoomNameLabel(String name, int index){
@@ -147,22 +262,78 @@ public class GameView {
 
     // 패널 전환 함수 LoginPanel, RoomPanel, GamePanel
     public void changePanel(String panelName){
+        System.out.println(panelName + "패널로 변경합니다.");
         CardLayout cardLayout = (CardLayout)frame.getContentPane().getLayout();
         cardLayout.show(frame.getContentPane(), panelName);
     }
 
 
+    public void changeTileComponent(TileComponent a, TileComponent b, boolean isHandToBoard){
+        int sr = a.getRow();
+        int sc = a.getCol();
+        int er = b.getRow();
+        int ec = b.getCol();
+        b.setCol(sc);
+        b.setRow(sr);
+
+        a.setCol(ec);
+        a.setRow(er);
+
+        if(isHandToBoard){
+            a.setInBoard(true);
+            b.setInBoard(false);
+        }
+
+    }
+
     // 타일 패널 이동 함수
-    public void moveTileUI(boolean startHand, boolean toHand, int startRow, int startCol, int endRow, int endCol) {
+    public boolean moveTileUI(TileComponent start, TileComponent end) {
         // 손패에 있는 타일일 경우
-        JPanel movePanel = startHand ? hand[startRow][startCol] : board[startRow][startCol];
-        JPanel desPanel = toHand ? hand[endRow][endCol] : board[endRow][endCol];
+        TileComponent startPanel = start.isInBoard() ? board[start.getRow()][start.getCol()] : hand[start.getRow()][start.getCol()];
+        TileComponent endPanel = end.isInBoard() ? board[end.getRow()][end.getCol()] : hand[end.getRow()][end.getCol()];
 
-        if (startHand) hand[startRow][startCol] = desPanel;
-        else board[startRow][startCol] = desPanel;
+        System.out.println(startPanel + " " + endPanel);
 
-        if (toHand) hand[endRow][endCol] = movePanel;
-        else board[endRow][endCol] = movePanel;
+
+        if (!startPanel.isInBoard()){
+            // hand -> hand
+            if(!endPanel.isInBoard()){
+                hand[start.getRow()][start.getCol()] = endPanel;
+                endPanel.setBounds(handPoints[start.getRow()][start.getCol()]);
+                hand[end.getRow()][end.getCol()] = startPanel;
+                startPanel.setBounds(handPoints[end.getRow()][end.getCol()]);
+                changeTileComponent(startPanel, endPanel, false);
+                return true;
+            }
+            // hand -> board
+            else{
+                if(!gameController.isInMyTurn()) return false;
+                if(gameController.canAdd(endPanel.getRow(), endPanel.getCol())){
+                    hand[start.getRow()][start.getCol()] = endPanel;
+                    endPanel.setBounds(handPoints[start.getRow()][start.getCol()]);
+                    board[end.getRow()][end.getCol()] = startPanel;
+                    startPanel.setBounds(boardPoints[end.getRow()][end.getCol()]);
+                    changeTileComponent(startPanel, endPanel, true);
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+        }
+
+        else{
+            if(!gameController.isInMyTurn()) return false;
+            if(endPanel.isInBoard()){
+                board[start.getRow()][start.getCol()] = endPanel;
+                endPanel.setBounds(boardPoints[start.getRow()][start.getCol()]);
+                board[end.getRow()][end.getCol()] = startPanel;
+                startPanel.setBounds(boardPoints[end.getRow()][end.getCol()]);
+                changeTileComponent(startPanel, endPanel, false);
+                return true;
+            }
+            else return false;
+        }
     }
 
     public void startUI() {
@@ -373,110 +544,143 @@ public class GameView {
         panel_3.setLayout(new BorderLayout(0, 0));
         GamePanel.add(panel_3);
 
-        JPanel panel_1 = new JPanel();
-        panel_3.add(panel_1, BorderLayout.SOUTH);
-        panel_1.setLayout(new BorderLayout(0, 0));
-
-        JPanel westPanel = new JPanel();
-        westPanel.setBackground(new Color(223, 241, 239));
-        westPanel.setPreferredSize(new Dimension(150, 1));
-        panel_1.add(westPanel, BorderLayout.WEST);
-
-        JPanel eastPanel = new JPanel();
-        eastPanel.setBackground(new Color(223, 241, 239));
-        eastPanel.setPreferredSize(new Dimension(150, 1));
-        panel_1.add(eastPanel, BorderLayout.EAST);
-
-        JPanel HandLayoutPanel = new JPanel();
-        HandLayoutPanel.setPreferredSize(new Dimension(1, 250));
-        panel_1.add(HandLayoutPanel, BorderLayout.CENTER);
-        HandLayoutPanel.setLayout(new BorderLayout(0, 0));
-
-        JPanel HandWestPanel = new JPanel();
-        HandWestPanel.setBackground(new Color(223, 241, 239));
-        HandWestPanel.setPreferredSize(new Dimension(20, 1));
-        HandLayoutPanel.add(HandWestPanel, BorderLayout.WEST);
-
-        JPanel HandEastPanel = new JPanel();
-        HandEastPanel.setBackground(new Color(223, 241, 239));
-        HandEastPanel.setPreferredSize(new Dimension(20, 1));
-        HandLayoutPanel.add(HandEastPanel, BorderLayout.EAST);
-
-        JPanel HandPanel = new JPanel();
-        HandLayoutPanel.add(HandPanel, BorderLayout.CENTER);
-        HandPanel.setLayout(new GridLayout(2, 10, 0, 0));
-
-        JPanel panell = new JPanel();
-        panell.setPreferredSize(new Dimension(10, 20));
-        panell.setBackground(new Color(223,241, 239));
-        panel_1.add(panell, BorderLayout.SOUTH);
-
         JPanel panel_5 = new JPanel();
         panel_3.add(panel_5, BorderLayout.CENTER);
         panel_5.setLayout(new BorderLayout(0, 0));
 
-        JPanel panel_6 = new JPanel();
-        panel_6.setBackground(new Color(223,241, 239));
-        panel_6.setPreferredSize(new Dimension(1, 20));
-        panel_5.add(panel_6, BorderLayout.NORTH);
-
-        JPanel panel_7 = new JPanel();
-        panel_5.add(panel_7, BorderLayout.CENTER);
-        panel_7.setLayout(new BorderLayout(0, 0));
-
-        JPanel panel_8 = new JPanel();
-        panel_8.setBackground(new Color(223,241, 239));
-
-        panel_8.setPreferredSize(new Dimension(15, 10));
-
-        panel_7.add(panel_8, BorderLayout.WEST);
-
-        JPanel panel_9 = new JPanel();
-        panel_9.setBackground(new Color(223,241, 239));
-
-        panel_9.setPreferredSize(new Dimension(15, 10));
-
-        panel_7.add(panel_9, BorderLayout.EAST);
-
-        JPanel BoardPanel = new JPanel();
-        BoardPanel.setBackground(new Color(223,241, 239));
+        JLayeredPane BoardPanel = new JLayeredPane();
+        panel_5.add(BoardPanel, BorderLayout.CENTER);
+        BoardPanel.setPreferredSize(new Dimension(1150, 10));
+        BoardPanel.setBackground(new Color(223, 241, 239));
 
 
-        panel_7.add(BoardPanel, BorderLayout.CENTER);
-        BoardPanel.setLayout(new GridLayout(BOARD_HEIGHT, BOARD_WIDTH, 0, 5));
-
+        int boardY = 20;
         // board 배열에 패널 추가
         for (int i = 0; i < BOARD_HEIGHT; i++) {
-            JPanel curRowPanel = new JPanel();
-            curRowPanel.setBackground(new Color(223,241, 239));
-            BoardPanel.add(curRowPanel);
+            int boardX = 45;
             for (int j = 0; j < BOARD_WIDTH; j++) {
-                JPanel tmp = new JPanel();
+                TileComponent tmp = new TileComponent(i, j, true, "asset/images/tile.png");
                 board[i][j] = tmp;
-                curRowPanel.add(tmp);
-                board[i][j].setPreferredSize(new Dimension(50, 75));
-                board[i][j].setBackground(new Color(223, 241, 239));
+                BoardPanel.add(tmp);
+                Rectangle tPoint = new Rectangle(boardX, boardY, 50, 75);
+                board[i][j].setBounds(tPoint);
+                boardPoints[i][j] = tPoint;
+                board[i][j].setBackground(Color.black);
+                boardX += 55;
+
+                tmp.addMouseListener(new MouseAdapter() {
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        curClickedPanel = tmp;
+                        originalPoint = tmp.getLocation();
+                        offsetX = e.getX();
+                        offsetY = e.getY();
+                        isDragging = true;
+                        BoardPanel.setLayer(tmp, JLayeredPane.DRAG_LAYER);
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        curClickedPanel.setLocation(originalPoint);
+                        curClickedPanel = null;
+                        originalPoint = null;
+                        isDragging = false;
+                        BoardPanel.setLayer(tmp, JLayeredPane.DEFAULT_LAYER);
+                    }
+                });
+                tmp.addMouseMotionListener(new MouseMotionAdapter() {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        if(isDragging){
+                            int newX = curClickedPanel.getX() + e.getX() - offsetX;
+                            int newY = curClickedPanel.getY() + e.getY() - offsetY;
+                            curClickedPanel.setLocation(newX, newY);
+                        }
+                    }
+                });
             }
+            boardY += 80;
         }
 
 
+        int handY = 600;
+        Font tileNumFont = new Font("Arial", Font.BOLD, 40);
         // hand 배열에 패널 추가
         for (int i = 0; i < HAND_HEIGHT; i++) {
-            JPanel curRowPanel = new JPanel();
-            curRowPanel.setBackground(new Color(223, 241, 239));
-            HandPanel.add(curRowPanel);
+            int handX = 170;
             for (int j = 0; j < HAND_WIDTH; j++) {
-                JPanel tmp = new JPanel();
+                TileComponent tmp = new TileComponent(i, j, false, "asset/images/tile.png");
                 hand[i][j] = tmp;
-                curRowPanel.add(tmp);
-                hand[i][j].setPreferredSize(new Dimension(80, 120));
+                BoardPanel.add(tmp);
+                hand[i][j].setBackground(Color.yellow);
+                hand[i][j].setLayout(null);
+                Rectangle tPoint = new Rectangle(handX, handY, 80, 120);
+                hand[i][j].setBounds(tPoint);
+                handPoints[i][j] = tPoint;
+                JLabel tmpLabel=new JLabel("");
+                tileNumberLabel[i][j] = tmpLabel;
+                tmpLabel.setForeground(Color.cyan);
+                tmpLabel.setFont(tileNumFont);
+                tmpLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                tmpLabel.setBounds(10, 15, 60, 60);
+                tmpLabel.setOpaque(false);
+                hand[i][j].add(tmpLabel);
+                handX += 85;
 
-                ImageIcon tile=new ImageIcon(new ImageIcon("asset/images/tile.png").getImage());
-                JLabel tiles=new JLabel();
-                tiles.setIcon(tile);
-                hand[i][j].setBackground(new Color(223, 241, 239));
-                hand[i][j].add(tiles);
+                tmp.addMouseListener(new MouseAdapter() {
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        curClickedPanel = tmp;
+                        originalPoint = tmp.getLocation();
+                        offsetX = e.getX();
+                        offsetY = e.getY();
+                        isDragging = true;
+                        BoardPanel.setLayer(tmp, JLayeredPane.DRAG_LAYER);
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+
+                        List<Component> foundComponents = LayeredPaneUtils.getAllComponentsAt(BoardPanel, e.getLocationOnScreen());
+                        boolean flag = false;
+                        System.out.println(foundComponents.size());
+
+                        for(Component comp : foundComponents) {
+                            System.out.println(comp);
+                            if (comp != tmp && comp instanceof TileComponent) {
+                                System.out.println(comp);
+                                TileComponent tcomp = (TileComponent) comp;
+                                if(moveTileUI(tmp, tcomp)){
+                                    gameController.changeTiles(tmp.isInBoard(), tcomp.isInBoard(), tmp.getRow(), tmp.getCol(), tcomp.getRow(), tcomp.getCol());
+                                }
+                                else{
+                                    curClickedPanel.setLocation(originalPoint);
+                                }
+                                break;
+                            }
+                        }
+                        if(!flag) curClickedPanel.setLocation(originalPoint);
+
+                        curClickedPanel = null;
+                        originalPoint = null;
+                        isDragging = false;
+                        BoardPanel.setLayer(tmp, JLayeredPane.DEFAULT_LAYER);
+                    }
+                });
+                tmp.addMouseMotionListener(new MouseMotionAdapter() {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        if(isDragging){
+                            int newX = curClickedPanel.getX() + e.getX() - offsetX;
+                            int newY = curClickedPanel.getY() + e.getY() - offsetY;
+                            curClickedPanel.setLocation(newX, newY);
+                        }
+                    }
+                });
             }
+            handY += 125;
         }
 
 
@@ -521,6 +725,12 @@ public class GameView {
         RunSortButton.setFocusPainted(false);
         RunSortButton.setOpaque(false);
         RunSortButton.setBounds(12, 45, 126, 123);
+        RunSortButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gameController.sortByRun();
+            }
+        });
         panel_4.add(RunSortButton);
 
 
@@ -534,6 +744,12 @@ public class GameView {
         GroupSortButton.setContentAreaFilled(false);
         GroupSortButton.setFocusPainted(false);
         GroupSortButton.setOpaque(false);
+        GroupSortButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gameController.sortByGroup();
+            }
+        });
         panel_4.add(GroupSortButton);
 
         JPanel panel_10 = new JPanel();
@@ -615,6 +831,26 @@ public class GameView {
         startButton.setContentAreaFilled(false);
         startButton.setOpaque(true);
 
+
+        // 시작 버튼 리스너
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(gameController.getIndex() == 0){
+                    if(gameController.checkReady()){
+                        gameController.serverStartGame();
+                    }
+                    else{
+                        roomNoticePanel.setText("모든 사람이 준비를 해야 시작할 수 있습니다.");
+                    }
+                }
+                else{
+                    roomNoticePanel.setText("방장이 게임을 시작할 수 있습니다.");
+                }
+            }
+        });
+
+
         panel_19.add(startButton, BorderLayout.CENTER);
 
         JPanel panel_20 = new JPanel();
@@ -651,6 +887,17 @@ public class GameView {
         readyButton.setFocusPainted(false);
         readyButton.setContentAreaFilled(false);
         readyButton.setOpaque(true);
+
+        readyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(gameController.getIndex() != 0){
+                    gameController.changeReadyState();
+                }
+            }
+        });
+
+
 
         panel_20.add(readyButton, BorderLayout.CENTER);
 
@@ -697,6 +944,7 @@ public class GameView {
                 RoomPlayerPanel.setBackground(new Color(0, 144, 81));
 //                RoomPlayerPanel.setBackground(Color.cyan);
                 JPanel tmpPanel = new JPanel();
+                tmpPanel.setBackground(new Color(223,241,239));
                 tmpPanel.setPreferredSize(new Dimension(550, 310));
                 RoomPlayerPanel.setPreferredSize(new Dimension(550, 310));
                 roomRowPanel.add(tmpPanel);
